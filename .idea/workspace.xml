@@ -2,14 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="511a55b2-cf5c-4406-bae2-35cd7fb8ea96" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/phaseprop/assoc.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/phaseprop/comps.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/phaseprop/cubic.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/phaseprop/main.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/phaseprop/spc_saft.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/phaseprop/units.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/phaseprop/utilities.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/phaseprop/eos.py" beforeDir="false" afterPath="$PROJECT_DIR$/phaseprop/eos.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -22,7 +15,7 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/phaseprop/eos.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="3978">
+            <state relative-caret-position="1598">
               <caret line="234" lean-forward="true" selection-start-line="234" selection-end-line="234" />
             </state>
           </provider>
@@ -31,8 +24,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/phaseprop/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="633">
-              <caret line="2912" selection-start-line="2912" selection-end-line="2912" />
+            <state relative-caret-position="711">
+              <caret line="52" column="30" selection-start-line="52" selection-start-column="30" selection-end-line="52" selection-end-column="30" />
               <folding>
                 <element signature="e#2050#2068#0" expanded="true" />
                 <element signature="e#2619#10017#0" />
@@ -57,8 +50,11 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/phaseprop/assoc.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1241">
-              <caret line="517" selection-start-line="517" selection-end-line="517" />
+            <state relative-caret-position="51">
+              <caret line="3" column="17" selection-start-line="3" selection-start-column="17" selection-end-line="3" selection-end-column="17" />
+              <folding>
+                <element signature="e#64#83#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -136,9 +132,9 @@
         <option value="$PROJECT_DIR$/phaseprop/cubic.py" />
         <option value="$PROJECT_DIR$/phaseprop/comps.py" />
         <option value="$PROJECT_DIR$/phaseprop/utilities.py" />
-        <option value="$PROJECT_DIR$/phaseprop/assoc.py" />
-        <option value="$PROJECT_DIR$/phaseprop/main.py" />
         <option value="$PROJECT_DIR$/phaseprop/eos.py" />
+        <option value="$PROJECT_DIR$/phaseprop/main.py" />
+        <option value="$PROJECT_DIR$/phaseprop/assoc.py" />
       </list>
     </option>
   </component>
@@ -252,7 +248,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="2514" height="1456" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.12876935" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -270,7 +265,7 @@
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-      <window_info active="true" anchor="right" id="Run" order="3" sideWeight="0.49934036" visible="true" weight="0.46903014" />
+      <window_info anchor="right" id="Run" order="3" sideWeight="0.49934036" weight="0.46903014" />
     </layout>
   </component>
   <component name="editorHistoryManager">
@@ -311,17 +306,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/phaseprop/assoc.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1241">
-          <caret line="517" selection-start-line="517" selection-end-line="517" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/phaseprop/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="633">
-          <caret line="2912" selection-start-line="2912" selection-end-line="2912" />
+        <state relative-caret-position="711">
+          <caret line="52" column="30" selection-start-line="52" selection-start-column="30" selection-end-line="52" selection-end-column="30" />
           <folding>
             <element signature="e#2050#2068#0" expanded="true" />
             <element signature="e#2619#10017#0" />
@@ -342,9 +330,19 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/phaseprop/assoc.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="51">
+          <caret line="3" column="17" selection-start-line="3" selection-start-column="17" selection-end-line="3" selection-end-column="17" />
+          <folding>
+            <element signature="e#64#83#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/phaseprop/eos.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3978">
+        <state relative-caret-position="1598">
           <caret line="234" lean-forward="true" selection-start-line="234" selection-end-line="234" />
         </state>
       </provider>
