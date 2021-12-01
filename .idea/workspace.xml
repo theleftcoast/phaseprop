@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="511a55b2-cf5c-4406-bae2-35cd7fb8ea96" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/phaseprop/assoc.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/phaseprop/comps.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/phaseprop/cubic.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/phaseprop/main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/phaseprop/spc_saft.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/phaseprop/units.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/phaseprop/utilities.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/phaseprop/eos.py" beforeDir="false" afterPath="$PROJECT_DIR$/phaseprop/eos.py" afterDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/phaseprop/eos.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="3978">
+              <caret line="234" lean-forward="true" selection-start-line="234" selection-end-line="234" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/phaseprop/main.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="633">
+              <caret line="2912" selection-start-line="2912" selection-end-line="2912" />
+              <folding>
+                <element signature="e#2050#2068#0" expanded="true" />
+                <element signature="e#2619#10017#0" />
+                <element signature="e#10290#12189#0" />
+                <element signature="e#13623#25085#0" />
+                <element signature="e#25114#31063#0" />
+                <element signature="e#31092#37019#0" />
+                <element signature="e#37047#46503#0" />
+                <element signature="e#46531#51435#0" />
+                <element signature="e#51465#63442#0" />
+                <element signature="e#63480#69553#0" />
+                <element signature="e#69660#74805#0" />
+                <element signature="e#74843#93365#0" />
+                <element signature="e#93391#104987#0" />
+                <element signature="e#107014#108371#0" />
+                <element signature="e#108398#139707#0" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/phaseprop/assoc.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1241">
+              <caret line="517" selection-start-line="517" selection-end-line="517" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/phaseprop/comps.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="391">
+              <caret line="23" column="18" selection-start-line="23" selection-start-column="18" selection-end-line="23" selection-end-column="18" />
+              <folding>
+                <element signature="e#837#27274#0" />
+                <element signature="e#26496#28190#0" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/phaseprop/utilities.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="68">
+              <caret line="4" lean-forward="true" selection-start-line="4" selection-end-line="4" />
+              <folding>
+                <element signature="e#24#42#0" expanded="true" />
+                <element signature="e#30#1392#0" />
+                <element signature="e#1427#24046#0" />
+                <element signature="e#24072#24240#0" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/phaseprop/spc_saft.py">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/phaseprop/cubic.py">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/phaseprop/units.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="833">
+              <caret line="49" selection-start-line="49" selection-end-line="51" selection-end-column="117" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>t_in_range</find>
+    </findStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="ROOT_SYNC" value="DONT_SYNC" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/phaseprop/units.py" />
+        <option value="$PROJECT_DIR$/phaseprop/spc_saft.py" />
+        <option value="$PROJECT_DIR$/phaseprop/cubic.py" />
+        <option value="$PROJECT_DIR$/phaseprop/comps.py" />
+        <option value="$PROJECT_DIR$/phaseprop/utilities.py" />
+        <option value="$PROJECT_DIR$/phaseprop/assoc.py" />
+        <option value="$PROJECT_DIR$/phaseprop/main.py" />
+        <option value="$PROJECT_DIR$/phaseprop/eos.py" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="-7" />
+    <option name="width" value="1263" />
+    <option name="height" value="1447" />
+  </component>
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scope" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="phaseprop" type="b2602c69:ProjectViewProjectNode" />
+              <item name="phaseprop" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="phaseprop" type="b2602c69:ProjectViewProjectNode" />
+              <item name="phaseprop" type="462c0819:PsiDirectoryNode" />
+              <item name="phaseprop" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager" selected="Python.main">
+    <configuration name="eos" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="phaseprop" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/phaseprop" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/phaseprop/eos.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="phaseprop" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/phaseprop" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/phaseprop/main.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.main" />
+        <item itemvalue="Python.eos" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="511a55b2-cf5c-4406-bae2-35cd7fb8ea96" name="Default Changelist" comment="" />
+      <created>1634496312972</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1634496312972</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="-8" y="-8" width="2514" height="1456" extended-state="6" />
+    <editor active="true" />
+    <layout>
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.12876935" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Debug" order="2" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="3" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="4" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="5" />
+      <window_info anchor="bottom" id="Version Control" order="6" weight="0.32950193" />
+      <window_info anchor="bottom" id="Terminal" order="7" />
+      <window_info anchor="bottom" id="Event Log" order="8" sideWeight="0.50065964" side_tool="true" weight="0.32950193" />
+      <window_info anchor="bottom" id="Python Console" order="9" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info active="true" anchor="right" id="Run" order="3" sideWeight="0.49934036" visible="true" weight="0.46903014" />
+    </layout>
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/phaseprop/units.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="833">
+          <caret line="49" selection-start-line="49" selection-end-line="51" selection-end-column="117" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/phaseprop/cubic.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/phaseprop/spc_saft.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/phaseprop/comps.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="391">
+          <caret line="23" column="18" selection-start-line="23" selection-start-column="18" selection-end-line="23" selection-end-column="18" />
+          <folding>
+            <element signature="e#837#27274#0" />
+            <element signature="e#26496#28190#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/phaseprop/utilities.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="68">
+          <caret line="4" lean-forward="true" selection-start-line="4" selection-end-line="4" />
+          <folding>
+            <element signature="e#24#42#0" expanded="true" />
+            <element signature="e#30#1392#0" />
+            <element signature="e#1427#24046#0" />
+            <element signature="e#24072#24240#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/phaseprop/assoc.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1241">
+          <caret line="517" selection-start-line="517" selection-end-line="517" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/phaseprop/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="633">
+          <caret line="2912" selection-start-line="2912" selection-end-line="2912" />
+          <folding>
+            <element signature="e#2050#2068#0" expanded="true" />
+            <element signature="e#2619#10017#0" />
+            <element signature="e#10290#12189#0" />
+            <element signature="e#13623#25085#0" />
+            <element signature="e#25114#31063#0" />
+            <element signature="e#31092#37019#0" />
+            <element signature="e#37047#46503#0" />
+            <element signature="e#46531#51435#0" />
+            <element signature="e#51465#63442#0" />
+            <element signature="e#63480#69553#0" />
+            <element signature="e#69660#74805#0" />
+            <element signature="e#74843#93365#0" />
+            <element signature="e#93391#104987#0" />
+            <element signature="e#107014#108371#0" />
+            <element signature="e#108398#139707#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/phaseprop/eos.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3978">
+          <caret line="234" lean-forward="true" selection-start-line="234" selection-end-line="234" />
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>
