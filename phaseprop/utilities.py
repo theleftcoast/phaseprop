@@ -56,7 +56,8 @@ class Callback(list):
         for d in self._delegates:
             d(*args, **kwargs)
 
-
+# TODO: Build a base class & subclass w/ specific correlations.  Corel1, Corel2, Corel3, etc.
+# TODO: Build w/ @dataclass
 class Corel(object):
     """Pure component temperature dependent property."""
     def __init__(self, a=None, b=None, c=None, d=None, e=None, f=None, g=None, eq_id=None,
@@ -80,8 +81,9 @@ class Corel(object):
         mae : float or None
         mape : float or None
         """
-        self.a = a
-        self.b = b
+        # call A-G hyperparameters in ML world...check on this.
+        self.a = a  # a: float
+        self.b = b  # b: float
         self.c = c
         self.d = d
         self.e = e
@@ -185,7 +187,6 @@ class Corel(object):
         self.source_unit = source_unit
         self.source = source
         self.notes = notes
-
 
     @property
     def a(self):
@@ -594,6 +595,8 @@ class Corel(object):
         else:
             return conv_to_si(self._derivative[self._eq_id](self._t_conv(t, self._source_t_unit)), self._source_unit)
 
+    # Do you really need None here.  Is that reasonable for all correlations?  Or do you want to set float defaults?
+    # None vs 0 or inf or ....etc.  Set this for each Corel class.  Just hard code this.
     def integral(self, t1=None, t2=None, relax_range=False):
         """Integral of the correlation.
 
@@ -625,6 +628,7 @@ class Corel(object):
             return conv_to_si(self._integral[self._eq_id](self._t_conv(t2, self._source_t_unit)) -
                               self._integral[self._eq_id](self._t_conv(t1, self._source_t_unit)), self._source_unit)
 
+    # TODO: t: float, etc....is a way to avoid type checking.
     def __call__(self, t=None, relax_range=False):
         """Evaluate the correlation.
 

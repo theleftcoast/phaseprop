@@ -43,10 +43,6 @@ calculations for water–methanol–alkane mixtures. Fluid Phase Equilib. 1999, 
 import numpy as np
 from scipy.optimize import minimize
 import copy
-from units import *
-from utilities import *
-from comps import *
-from eos import *
 from assoc import *
 
 # TODO: Check that value errors and type errors are raised consistently.
@@ -58,237 +54,7 @@ PHYS_EOS = CUBIC_EOS + PC_SAFT_EOS
 ASSOC_EOS = ['CPA', 'PC-SAFT', 'sPC-SAFT']
 
 
-class CubicSpec(object):
-    """Constants and functions that define a specific version of the generalized cubic equation of state.
 
-    Notes
-    -----
-    Generalized cubic equation of state functional form and thermodynamic properties are from [1]_.
-
-    P = R*T/(v - b) - a*alpha(T)/((v + delta_1*b) * (v + delta_2*b))
-
-    References
-    ----------
-    [1] Michelsen, M. L.; Mollerup, J. Thermodynamic Models: Fundamental and Computational Aspects, 2nd ed.; Tie-Line
-    Publications: Holte, Denmark, 2007.
-    """
-
-    def __init__(self, delta_1=None, delta_2=None, alpha=None):
-        """
-        Parameters
-        ----------
-        delta_1 : float
-        delta_2 : float
-        alpha : str
-        """
-        if delta_1 is None or delta_2 is None or alpha is None:
-            raise ValueError("Inputs are not sufficient to define an instance of CubicSpec.")
-        else:
-            self.delta_1 = delta_1
-            self.delta_2 = delta_2
-            self.alpha = alpha
-
-    @property
-    def delta_1(self):
-        """delta_1 parameter for generalized cubic equation of state."""
-        return self._delta_1
-
-    @delta_1.setter
-    def delta_1(self, value):
-        try:
-            self._delta_1
-        except AttributeError:
-            if isinstance(value, float):
-                self._delta_1 = value
-            else:
-                raise ValueError("delta_1 must be a float.")
-
-    @property
-    def delta_2(self):
-        """delta_2 parameter for generalized cubic equation of state."""
-        return self._delta_2
-
-    @delta_2.setter
-    def delta_2(self, value):
-        try:
-            self._delta_2
-        except AttributeError:
-            if isinstance(value, float):
-                self._delta_2 = value
-            else:
-                raise ValueError("delta_2 must be a float.")
-
-    @property
-    def alpha(self):
-        """Alpha function for generalized cubic equation of state (either 'soave', 'gasem', or 'twu')."""
-        return self._alpha
-
-    @alpha.setter
-    def alpha(self, value):
-        try:
-            self._alpha
-        except AttributeError:
-            if value == 'soave':
-                self._alpha = self._soave
-            elif value == 'gasem':
-                self._alpha = self._gasem
-            elif value == 'twu':
-                self._alpha = self._twu
-            else:
-                raise ValueError("alpha must be a valid string.")
-
-    def _soave(self, tr, m):
-        """Soave alpha function.
-
-        Parameters
-        ----------
-        tr : float
-            Reduced temperature (defined as Tr = T / Tc).
-        m : float
-            Soave's slope parameter.
-
-        Returns
-        -------
-        float
-            Soave's alpha function evaluated at tr.
-
-        Notes
-        -----
-        Initial guess for nonpolar compounds: m = 0.48 + 1.574*acentric + 0.176*acentric**2
-
-        References
-        ----------
-        [1] Soave, G. Equilibrium constants from a modified Redlich-Kwong equation of state. Fluid Phase Equilb. 1972,
-        27, 1197-1203.
-        """
-        return (1.0 + m * (1.0 - tr ** 0.5)) ** 2.0
-
-    def _gasem(self, tr, a, b, c):
-        """Gasem alpha function.
-
-        Parameters
-        ----------
-        tr : float
-            Reduced temperature (defined as Tr = T / Tc).
-        a : float
-            Gasem model constant.
-        b : float
-            Gasem model constant.
-        c : float
-            Gasem model constant.
-
-        Returns
-        -------
-        float
-            Gasem's alpha function evaluated at tr.
-
-        Notes
-        -----
-        Initial guess for nonpolar compounds: a = 2.0, b = 0.836, c = 0.134+0.508*acentric+-0.0467*acentric**2
-        For hydrogen: a = -4.3, b = 10.4
-
-        References
-        ----------
-        [1] Gasem, K. A. M.; Gao, W.; Pan, Z.; Robinson R. L. A modified temperature dependence for the Peng-Robinson
-        equation of state. Fluid Phase Equilib. 2001, 181, 113-125.
-        """
-        return np.exp((a + b * tr) * (1.0 - tr ** c))
-
-    def _twu(self, tr, l, m, n):
-        """Twu alpha function.
-
-        Parameters
-        ----------
-        tr : float
-            Reduced temperature (defined as Tr = T / Tc).
-        l : float
-            Twu model constant.
-        m : float
-            Twu model constant.
-        n : float
-            Twu model constant.
-
-        Returns
-        -------
-        float
-            Twu's alpha function evaluated at tr.
-
-        Notes
-        -----
-        Generic parameters are unavailable.  However, there are large tables of pure component parameters that can be
-        used as a starting point for further optimization [2]_.
-
-        References
-        ----------
-        [1] Twu, C. H.; Bluck, D.; Cunningham, J. R.; Coon, J. E. A cubic equation of state with a new alpha function
-        and a new mixing rule. Fluid Phase Equilib. 1991, 69, 33-50.
-        [2] Le Guennec, Y.; Privat, R.; Jaubert. J. N. Development of the translated-consistent tc-PR and tc-RK cubic
-        equations of state for a safe and accurate prediction of volumetric, energetic and saturation properties of pure
-        compounds in the sub- and super-critical domains. Fluid Phase Equilib. 2016, 429, 301-312.
-        """
-        return np.exp(l * (1.0 - tr ** (n * m))) * (tr ** (n * (m - 1.0)))
-
-    def _d_1(self):
-        """Intermediate variable used to evaluate critical properties."""
-        return self.delta_1 + self.delta_2
-
-    def _d_2(self):
-        """Intermediate variable used to evaluate critical properties."""
-        return self.delta_1 * self.delta_2
-
-    def _y(self):
-        """Intermediate variable used to evaluate critical properties."""
-        a = ((1.0 + self.delta_2) * (1.0 + self.delta_1) ** 2.0) ** (1.0 / 3.0)
-        b = ((1.0 + self.delta_1) * (1.0 + self.delta_2) ** 2.0) ** (1.0 / 3.0)
-        return 1.0 + a + b
-
-    def _gamma_c(self):
-        """Intermediate variable used to evaluate critical properties."""
-        numerator = 3.0 * self.y() ** 2.0 + 3.0 * self.y() * self.d_1() + self.d_1() ** 2.0 - self.d_2()
-        denominator = 3.0 * self.y() + self.d_1() - 1.0
-        return numerator / denominator
-
-    def _z_c(self):
-        """Critical compressibility factor."""
-        return self.y() / (3.0 * self.y() + self.d_1() - 1.0)
-
-    def _z_b(self):
-        """Intermediate variable used to evaluate critical properties."""
-        return 1.0 / (3.0 * self.y() + self.d_1() - 1.0)
-
-    def _omega_a(self):
-        """Constant for ac if the CEOS is constrained to match Tc and Pc."""
-        return self.gamma_c() * self.z_b()
-
-    def _omega_b(self):
-        """Constant for bc if the CEOS is constrained to match Tc and Pc."""
-        return self.z_b()
-
-    def __eq__(self, other):
-        if isinstance(other, CubicSpec):
-            delta_1_eq = self.delta_1 == other.delta_1
-            delta_2_eq = self.delta_2 == other.delta_2
-            alpha_eq = self.alpha == other.alpha
-            return delta_1_eq and delta_2_eq and alpha_eq
-        return False
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def __hash__(self):
-        return hash((self.delta_1, self.delta_2, self.alpha, self.vol_trans))
-
-    def __str__(self):
-        return "delta_1: ({}), delta_2: ({}), alpha: {}".format(self.delta_1,
-                                                                self.delta_2,
-                                                                self.alpha)
-
-
-PR = CubicSpec(1.0 + 2 ** 0.5, 0.0 - 2 ** 0.5, 'soave')
-GPR = CubicSpec(1.0 + 2 ** 0.5, 0.0 - 2 ** 0.5, 'gasem')
-TPR = CubicSpec(1.0 + 2 ** 0.5, 0.0 - 2 ** 0.5, 'twu')
-SRK = CubicSpec(1.0, 0.0, 'soave')
-CPA = CubicSpec(1.0, 0.0, 'soave')
 
 
 class PCSAFTSpec(object):
@@ -2999,12 +2765,20 @@ class sPCSAFT(EOS):
     def vol_solver(self, p=None, t=None, ni=None, xai=None, root=None, prior=None, eps=10 ** -2, max_iter=100):
         """Solve for volume when temperature, mole numbers, and pressure are specified."""
         # Check inputs for consistency.
+        # TODO: Use type hints to check for type.  isinstance takes a bunch of time.  Still use > 0 checks, but do it
+        # TODO: in one line.
+        # TODO: Don't initialize as None.  Just type check for float.  Does the same thing.
         if not isinstance(p, float) and p > 0.0:
             raise TypeError("p must be a positive float.")
         elif not isinstance(t, float) and t > 0.0:
             raise TypeError("t must be a positive float.")
         elif not isinstance(ni, (list, tuple, np.ndarray)):
             raise TypeError("ni must be a list, tuple, or np.ndarray.")
+        # TODO: type check this also .... typing.List[float].  The general concept here is generics.
+        # List[float] equivalent to all(isinstance(i, (float, np.floating)) for i in ni)
+        # T = TypeVar()
+        # ArrayLike[T] = Union[List[T}, Tuple[T]......]
+        # floaty = float | np.floating
         elif not all(isinstance(i, (float, np.floating)) for i in ni):
             raise TypeError("ni can only contain floats.")
         elif not all(i >= 0.0 for i in ni):
@@ -3028,9 +2802,10 @@ class sPCSAFT(EOS):
             # TODO: Need to define function call in terms of xai.
             return self.p_v(t, v, ni, xai) * self._v_from_eta_eta(t, self._eta(t, v, ni), ni)
 
-        # Define reduced density limits based on physics of the problem.
+        # Define reduced density limits based on physics of the problem.  Very close to Hexagonal Close Packed
         eta_min = 0.0
         eta_max = 0.74047
+        # TODO: Consider capitalizing.  Shift F6 is a good renaming tool....use it.
         eta_abs_min = 0.0
         eta_abs_max = 0.74047
 
@@ -3063,6 +2838,8 @@ class sPCSAFT(EOS):
             # Evaluate the derivative of f and check for zero denominator. If zero denominator encountered, then
             # estimate new reduced density using a limit bisection and proceed to the next iteration.
             _func_v = func_v(t, v, ni, xai)
+            # TODO:  Don't compare to 0...compare to an epsilon tolerance that prevents numerical explosion.
+            # TODO:  Reformulate this as a try/except.  Try this thing....except divide by zero error. Ask forgivenes...
             if _func_v == 0.0:
                 eta = (eta_min + eta_max) / 2.0
                 continue
@@ -3072,6 +2849,7 @@ class sPCSAFT(EOS):
             if not eta_min < eta < eta_max:
                 eta = (eta_min + eta_max) / 2.0
             # Raise error if reduced density exceeds eta_abs_max.
+            # TODO: Make  explicit. Why is density check outside of the max limit special. Why check. Tell the user.
             if eta <= eta_abs_min or eta >= eta_abs_max:
                 raise RuntimeError("Exceeded density limits.")
         raise RuntimeError("Exceeded maximum iterations. No solution found.")
@@ -3537,352 +3315,353 @@ class sPCSAFT(EOS):
         return hash((self.phys_inter, self.assoc_inter))
 
 
-# Information from DIPPR tables presented in Perry's Chemical Engineer's Handbook, 9th ed.
-methane = Comp('Methane')
-methane.formula = "CH4"
-methane.family = "Alkanes"
-methane.cas_no = "74-82-8"
-methane.mw = 16.0425
-methane.tc = 190.564
-methane.pc = 4599000.0
-methane.vc = 0.0000986
-methane.acentric = 0.0115478
+if __name__ == "__main__":
+    # Information from DIPPR tables presented in Perry's Chemical Engineer's Handbook, 9th ed.
+    methane = Comp('Methane')
+    methane.formula = "CH4"
+    methane.family = "Alkanes"
+    methane.cas_no = "74-82-8"
+    methane.mw = 16.0425
+    methane.tc = 190.564
+    methane.pc = 4599000.0
+    methane.vc = 0.0000986
+    methane.acentric = 0.0115478
 
-methane.spc_saft_phys = PCSAFTParms(comp=methane,
-                                    pc_saft_spec=GS,
-                                    source="Ind. Eng. Chem. Res. 2001, 40, 1244-1260.",
-                                    seg_num=1.0, seg_diam=3.7039, disp_energy=150.03)
+    methane.spc_saft_phys = PCSAFTParms(comp=methane,
+                                        pc_saft_spec=GS,
+                                        source="Ind. Eng. Chem. Res. 2001, 40, 1244-1260.",
+                                        seg_num=1.0, seg_diam=3.7039, disp_energy=150.03)
 
-# Information from DIPPR tables presented in Perry's Chemical Engineer's Handbook, 9th ed.
-ethane = Comp('Ethane')
-ethane.formula = "C2H6"
-ethane.family = "Alkanes"
-ethane.cas_no = "74-84-0"
-ethane.mw = 30.069
-ethane.tc = 305.32
-ethane.pc = 4872000.0
-ethane.vc = 0.0001455
-ethane.acentric = 0.099493
+    # Information from DIPPR tables presented in Perry's Chemical Engineer's Handbook, 9th ed.
+    ethane = Comp('Ethane')
+    ethane.formula = "C2H6"
+    ethane.family = "Alkanes"
+    ethane.cas_no = "74-84-0"
+    ethane.mw = 30.069
+    ethane.tc = 305.32
+    ethane.pc = 4872000.0
+    ethane.vc = 0.0001455
+    ethane.acentric = 0.099493
 
-# Parameters from Ind. Eng. Chem. Res. 2001, 40, 1244-1260.
-ethane.spc_saft_phys = PCSAFTParms(comp=ethane,
-                                   pc_saft_spec=GS,
-                                   source="Ind. Eng. Chem. Res. 2001, 40, 1244-1260.",
-                                   seg_num=1.6069, seg_diam=3.5206, disp_energy=191.42)
+    # Parameters from Ind. Eng. Chem. Res. 2001, 40, 1244-1260.
+    ethane.spc_saft_phys = PCSAFTParms(comp=ethane,
+                                       pc_saft_spec=GS,
+                                       source="Ind. Eng. Chem. Res. 2001, 40, 1244-1260.",
+                                       seg_num=1.6069, seg_diam=3.5206, disp_energy=191.42)
 
-# Information from DIPPR tables presented in Perry's Chemical Engineer's Handbook, 9th ed.
-propane = Comp('Propane')
-propane.formula = "C3H8"
-propane.family = "Alkanes"
-propane.cas_no = "74-98-6"
-propane.mw = 44.09562
-propane.tc = 369.83
-propane.pc = 4248000.0
-propane.vc = 0.0002
-propane.acentric = 0.152291
+    # Information from DIPPR tables presented in Perry's Chemical Engineer's Handbook, 9th ed.
+    propane = Comp('Propane')
+    propane.formula = "C3H8"
+    propane.family = "Alkanes"
+    propane.cas_no = "74-98-6"
+    propane.mw = 44.09562
+    propane.tc = 369.83
+    propane.pc = 4248000.0
+    propane.vc = 0.0002
+    propane.acentric = 0.152291
 
-propane.spc_saft_phys = PCSAFTParms(comp=propane,
-                                    pc_saft_spec=GS,
-                                    source="Ind. Eng. Chem. Res. 2001, 40, 1244-1260.",
-                                    seg_num=2.002, seg_diam=3.6184, disp_energy=208.11)
+    propane.spc_saft_phys = PCSAFTParms(comp=propane,
+                                        pc_saft_spec=GS,
+                                        source="Ind. Eng. Chem. Res. 2001, 40, 1244-1260.",
+                                        seg_num=2.002, seg_diam=3.6184, disp_energy=208.11)
 
-# Information from DIPPR tables presented in Perry's Chemical Engineer's Handbook, 9th ed.
-nitrogen = Comp('Nitrogen')
-nitrogen.formula = "N2"
-nitrogen.family = "Inorganics"
-nitrogen.cas_no = "7727-37-9"
-nitrogen.mw = 28.0134
-nitrogen.tc = 126.2
-nitrogen.pc = 3400000.0
-nitrogen.vc = 0.00008921
-nitrogen.acentric = 0.0377215
+    # Information from DIPPR tables presented in Perry's Chemical Engineer's Handbook, 9th ed.
+    nitrogen = Comp('Nitrogen')
+    nitrogen.formula = "N2"
+    nitrogen.family = "Inorganics"
+    nitrogen.cas_no = "7727-37-9"
+    nitrogen.mw = 28.0134
+    nitrogen.tc = 126.2
+    nitrogen.pc = 3400000.0
+    nitrogen.vc = 0.00008921
+    nitrogen.acentric = 0.0377215
 
-nitrogen.spc_saft_phys = PCSAFTParms(comp=nitrogen,
-                                     pc_saft_spec=GS,
-                                     source="Ind. Eng. Chem. Res. 2001, 40, 1244-1260.",
-                                     seg_num=1.2053, seg_diam=3.3130, disp_energy=90.96)
+    nitrogen.spc_saft_phys = PCSAFTParms(comp=nitrogen,
+                                         pc_saft_spec=GS,
+                                         source="Ind. Eng. Chem. Res. 2001, 40, 1244-1260.",
+                                         seg_num=1.2053, seg_diam=3.3130, disp_energy=90.96)
 
-# Information from DIPPR tables presented in Perry's Chemical Engineer's Handbook, 9th ed.
-water = Comp('Water')
-water.formula = "H2O"
-water.family = "Inorganics"
-water.cas_no = "7732-18-5"
-water.mw = 18.01528
-water.tc = 647.096
-water.pc = 22064000.0
-water.vc = 0.0000559472
-water.acentric = 0.344861
+    # Information from DIPPR tables presented in Perry's Chemical Engineer's Handbook, 9th ed.
+    water = Comp('Water')
+    water.formula = "H2O"
+    water.family = "Inorganics"
+    water.cas_no = "7732-18-5"
+    water.mw = 18.01528
+    water.tc = 647.096
+    water.pc = 22064000.0
+    water.vc = 0.0000559472
+    water.acentric = 0.344861
 
-water.pvap = Corel(a=73.649,
-                   b=-7258.2,
-                   c=-7.3037,
-                   d=4.1653 * 10 ** -6,
-                   e=2.0,
-                   eq_id=1,
-                   source_t_min=273.16,
-                   source_t_max=647.1,
-                   source_t_unit='K',
-                   source_unit='Pa',
-                   source=REFERENCES['DIPPR'],
-                   notes="DIPPR correlation parameters taken from Perry's Chemical Engineers' Handbook, 9th")
+    water.pvap = Corel(a=73.649,
+                       b=-7258.2,
+                       c=-7.3037,
+                       d=4.1653 * 10 ** -6,
+                       e=2.0,
+                       eq_id=1,
+                       source_t_min=273.16,
+                       source_t_max=647.1,
+                       source_t_unit='K',
+                       source_unit='Pa',
+                       source=REFERENCES['DIPPR'],
+                       notes="DIPPR correlation parameters taken from Perry's Chemical Engineers' Handbook, 9th")
 
-water.hvap = Corel(a=5.66 * 10 ** 7,
-                   b=0.612041,
-                   c=-0.625697,
-                   d=0.398804,
-                   e=0.0,
-                   f=647.096,
-                   eq_id=4,
-                   source_t_min=273.16,
-                   source_t_max=647.096,
-                   source_t_unit='K',
-                   source_unit='J/kmol',
-                   source=REFERENCES['DIPPR'],
-                   notes="DIPPR correlation parameters taken from Perry's Chemical Engineers' Handbook, 9th")
+    water.hvap = Corel(a=5.66 * 10 ** 7,
+                       b=0.612041,
+                       c=-0.625697,
+                       d=0.398804,
+                       e=0.0,
+                       f=647.096,
+                       eq_id=4,
+                       source_t_min=273.16,
+                       source_t_max=647.096,
+                       source_t_unit='K',
+                       source_unit='J/kmol',
+                       source=REFERENCES['DIPPR'],
+                       notes="DIPPR correlation parameters taken from Perry's Chemical Engineers' Handbook, 9th")
 
-water.cp_ig = Corel(a=0.33363 * 10 ** 5.0,
-                    b=0.26790 * 10 ** 5.0,
-                    c=2.61050 * 10 ** 3.0,
-                    d=0.08896 * 10 ** 5.0,
-                    e=1169.0,
-                    eq_id=7,
-                    source_t_min=100.0,
-                    source_t_max=2273.15,
-                    source_t_unit='K',
-                    source_unit="J/kmol.K",
-                    source=REFERENCES['DIPPR'],
-                    notes="DIPPR correlation parameters taken from Perry's Chemical Engineers' Handbook, 9th")
+    water.cp_ig = Corel(a=0.33363 * 10 ** 5.0,
+                        b=0.26790 * 10 ** 5.0,
+                        c=2.61050 * 10 ** 3.0,
+                        d=0.08896 * 10 ** 5.0,
+                        e=1169.0,
+                        eq_id=7,
+                        source_t_min=100.0,
+                        source_t_max=2273.15,
+                        source_t_unit='K',
+                        source_unit="J/kmol.K",
+                        source=REFERENCES['DIPPR'],
+                        notes="DIPPR correlation parameters taken from Perry's Chemical Engineers' Handbook, 9th")
 
-water.spc_saft_phys = PCSAFTParms(comp=water,
-                                  pc_saft_spec=GS,
-                                  source="Ind. Eng. Chem. Res. 2014, 53, 14493−14507.",
-                                  seg_num=2.0, seg_diam=2.3449, disp_energy=171.67)
+    water.spc_saft_phys = PCSAFTParms(comp=water,
+                                      pc_saft_spec=GS,
+                                      source="Ind. Eng. Chem. Res. 2014, 53, 14493−14507.",
+                                      seg_num=2.0, seg_diam=2.3449, disp_energy=171.67)
 
-# Define association sites corresponding to water as a symmetrically associating 4C molecule.
-ea1 = AssocSite(comp=water, site='H1', type='ea')
-ea2 = AssocSite(comp=water, site='H2', type='ea')
-ed1 = AssocSite(comp=water, site='O1', type='ed')
-ed2 = AssocSite(comp=water, site='O2', type='ed')
+    # Define association sites corresponding to water as a symmetrically associating 4C molecule.
+    ea1 = AssocSite(comp=water, site='H1', type='ea')
+    ea2 = AssocSite(comp=water, site='H2', type='ea')
+    ed1 = AssocSite(comp=water, site='O1', type='ed')
+    ed2 = AssocSite(comp=water, site='O2', type='ed')
 
-water.assoc_sites = [ea1, ea2, ed1, ed2]
+    water.assoc_sites = [ea1, ea2, ed1, ed2]
 
-ea1_ed1 = AssocSiteInter(site_a=ea1, site_b=ed1,
-                         eos='sPC-SAFT',
-                         source="Ind. Eng. Chem. Res. 2014, 53, 14493−14507.",
-                         assoc_energy=1704.06, assoc_vol=0.3048)
-ea1_ed2 = AssocSiteInter(site_a=ea1, site_b=ed2,
-                         eos='sPC-SAFT',
-                         source="Ind. Eng. Chem. Res. 2014, 53, 14493−14507.",
-                         assoc_energy=1704.06, assoc_vol=0.3048)
-ea2_ed1 = AssocSiteInter(site_a=ea2, site_b=ed1,
-                         eos='sPC-SAFT',
-                         source="Ind. Eng. Chem. Res. 2014, 53, 14493−14507.",
-                         assoc_energy=1704.06, assoc_vol=0.3048)
-ea2_ed2 = AssocSiteInter(site_a=ea2, site_b=ed2,
-                         eos='sPC-SAFT',
-                         source="Ind. Eng. Chem. Res. 2014, 53, 14493−14507.",
-                         assoc_energy=1704.06, assoc_vol=0.3048)
+    ea1_ed1 = AssocSiteInter(site_a=ea1, site_b=ed1,
+                             eos='sPC-SAFT',
+                             source="Ind. Eng. Chem. Res. 2014, 53, 14493−14507.",
+                             assoc_energy=1704.06, assoc_vol=0.3048)
+    ea1_ed2 = AssocSiteInter(site_a=ea1, site_b=ed2,
+                             eos='sPC-SAFT',
+                             source="Ind. Eng. Chem. Res. 2014, 53, 14493−14507.",
+                             assoc_energy=1704.06, assoc_vol=0.3048)
+    ea2_ed1 = AssocSiteInter(site_a=ea2, site_b=ed1,
+                             eos='sPC-SAFT',
+                             source="Ind. Eng. Chem. Res. 2014, 53, 14493−14507.",
+                             assoc_energy=1704.06, assoc_vol=0.3048)
+    ea2_ed2 = AssocSiteInter(site_a=ea2, site_b=ed2,
+                             eos='sPC-SAFT',
+                             source="Ind. Eng. Chem. Res. 2014, 53, 14493−14507.",
+                             assoc_energy=1704.06, assoc_vol=0.3048)
 
-water.spc_saft_assoc = [ea1_ed1, ea1_ed2, ea2_ed1, ea2_ed2]
+    water.spc_saft_assoc = [ea1_ed1, ea1_ed2, ea2_ed1, ea2_ed2]
 
-# Information from DIPPR tables presented in Perry's Chemical Engineer's Handbook, 9th ed.
-methanol = Comp('Methanol')
-methanol.formula = "CH3OH"
-methanol.family = "Alcohols"
-methanol.cas_no = "67-56-1"
-methanol.mw = 32.04186
-methanol.tc = 512.5
-methanol.pc = 8084000.0
-methanol.vc = 0.000117
-methanol.acentric = 0.565831
+    # Information from DIPPR tables presented in Perry's Chemical Engineer's Handbook, 9th ed.
+    methanol = Comp('Methanol')
+    methanol.formula = "CH3OH"
+    methanol.family = "Alcohols"
+    methanol.cas_no = "67-56-1"
+    methanol.mw = 32.04186
+    methanol.tc = 512.5
+    methanol.pc = 8084000.0
+    methanol.vc = 0.000117
+    methanol.acentric = 0.565831
 
-methanol.spc_saft_phys = PCSAFTParms(comp=methanol,
-                                     pc_saft_spec=GS,
-                                     source="Ind. Eng. Chem. Res. 2012, 45, 14903–14914.",
-                                     seg_num=1.88238, seg_diam=3.0023, disp_energy=181.77)
+    methanol.spc_saft_phys = PCSAFTParms(comp=methanol,
+                                         pc_saft_spec=GS,
+                                         source="Ind. Eng. Chem. Res. 2012, 45, 14903–14914.",
+                                         seg_num=1.88238, seg_diam=3.0023, disp_energy=181.77)
 
-# Define association sites corresponding to methanol as a 2B molecule.
-ea1 = AssocSite(comp=methanol, site='H1', type='ea')
-ed1 = AssocSite(comp=methanol, site='O1', type='ed')
+    # Define association sites corresponding to methanol as a 2B molecule.
+    ea1 = AssocSite(comp=methanol, site='H1', type='ea')
+    ed1 = AssocSite(comp=methanol, site='O1', type='ed')
 
-methanol.assoc_sites = [ea1, ed1]
+    methanol.assoc_sites = [ea1, ed1]
 
-ea1_ed1 = AssocSiteInter(site_a=ea1, site_b=ed1,
-                         eos='sPC-SAFT',
-                         source="Ind. Eng. Chem. Res. 2012, 45, 14903–14914.",
-                         assoc_energy=2738.03, assoc_vol=0.054664)
+    ea1_ed1 = AssocSiteInter(site_a=ea1, site_b=ed1,
+                             eos='sPC-SAFT',
+                             source="Ind. Eng. Chem. Res. 2012, 45, 14903–14914.",
+                             assoc_energy=2738.03, assoc_vol=0.054664)
 
-mm = BinaryInterParm(comp_a=methane, comp_b=methane,
-                     phys_eos_spec=GS, eos='sPC-SAFT',
-                     source='pure component',
-                     temp_indep_coef=0.0)
+    mm = BinaryInterParm(comp_a=methane, comp_b=methane,
+                         phys_eos_spec=GS, eos='sPC-SAFT',
+                         source='pure component',
+                         temp_indep_coef=0.0)
 
-me = BinaryInterParm(comp_a=methane, comp_b=ethane,
-                     phys_eos_spec=GS, eos='sPC-SAFT',
-                     source='initial guess',
-                     temp_indep_coef=0.03)
+    me = BinaryInterParm(comp_a=methane, comp_b=ethane,
+                         phys_eos_spec=GS, eos='sPC-SAFT',
+                         source='initial guess',
+                         temp_indep_coef=0.03)
 
-mp = BinaryInterParm(comp_a=methane, comp_b=propane,
-                     phys_eos_spec=GS, eos='sPC-SAFT',
-                     source='initial guess',
-                     temp_indep_coef=0.03)
+    mp = BinaryInterParm(comp_a=methane, comp_b=propane,
+                         phys_eos_spec=GS, eos='sPC-SAFT',
+                         source='initial guess',
+                         temp_indep_coef=0.03)
 
-ee = BinaryInterParm(comp_a=ethane, comp_b=ethane,
-                     phys_eos_spec=GS, eos='sPC-SAFT',
-                     source='pure component',
-                     temp_indep_coef=0.0)
+    ee = BinaryInterParm(comp_a=ethane, comp_b=ethane,
+                         phys_eos_spec=GS, eos='sPC-SAFT',
+                         source='pure component',
+                         temp_indep_coef=0.0)
 
-ep = BinaryInterParm(comp_a=ethane, comp_b=propane,
-                     phys_eos_spec=GS, eos='sPC-SAFT',
-                     source='initial guess',
-                     temp_indep_coef=0.01)
+    ep = BinaryInterParm(comp_a=ethane, comp_b=propane,
+                         phys_eos_spec=GS, eos='sPC-SAFT',
+                         source='initial guess',
+                         temp_indep_coef=0.01)
 
-pp = BinaryInterParm(comp_a=propane, comp_b=propane,
-                     phys_eos_spec=GS, eos='sPC-SAFT',
-                     source='pure component',
-                     temp_indep_coef=0.0)
+    pp = BinaryInterParm(comp_a=propane, comp_b=propane,
+                         phys_eos_spec=GS, eos='sPC-SAFT',
+                         source='pure component',
+                         temp_indep_coef=0.0)
 
-wm = BinaryInterParm(comp_a=water, comp_b=methane,
-                     phys_eos_spec=GS, eos='sPC-SAFT',
-                     source='J. Chem. Eng. Data 2017, 62, 2592–2605.',
-                     temp_indep_coef=0.2306,
-                     inv_temp_coef=-92.62)
+    wm = BinaryInterParm(comp_a=water, comp_b=methane,
+                         phys_eos_spec=GS, eos='sPC-SAFT',
+                         source='J. Chem. Eng. Data 2017, 62, 2592–2605.',
+                         temp_indep_coef=0.2306,
+                         inv_temp_coef=-92.62)
 
-we = BinaryInterParm(comp_a=water, comp_b=ethane,
-                     phys_eos_spec=GS, eos='sPC-SAFT',
-                     source='J. Chem. Eng. Data 2017, 62, 2592–2605.',
-                     temp_indep_coef=0.1773,
-                     inv_temp_coef=-53.97)
+    we = BinaryInterParm(comp_a=water, comp_b=ethane,
+                         phys_eos_spec=GS, eos='sPC-SAFT',
+                         source='J. Chem. Eng. Data 2017, 62, 2592–2605.',
+                         temp_indep_coef=0.1773,
+                         inv_temp_coef=-53.97)
 
-wp = BinaryInterParm(comp_a=water, comp_b=propane,
-                     phys_eos_spec=GS, eos='sPC-SAFT',
-                     source='initial guess',
-                     temp_indep_coef=0.05)
+    wp = BinaryInterParm(comp_a=water, comp_b=propane,
+                         phys_eos_spec=GS, eos='sPC-SAFT',
+                         source='initial guess',
+                         temp_indep_coef=0.05)
 
-mem = BinaryInterParm(comp_a=methanol, comp_b=methane,
-                      phys_eos_spec=GS, eos='sPC-SAFT',
-                      source='J. Chem. Eng. Data 2017, 62, 2592–2605.',
-                      temp_indep_coef=0.01)
+    mem = BinaryInterParm(comp_a=methanol, comp_b=methane,
+                          phys_eos_spec=GS, eos='sPC-SAFT',
+                          source='J. Chem. Eng. Data 2017, 62, 2592–2605.',
+                          temp_indep_coef=0.01)
 
-mee = BinaryInterParm(comp_a=methanol, comp_b=ethane,
-                      phys_eos_spec=GS, eos='sPC-SAFT',
-                      source='J. Chem. Eng. Data 2017, 62, 2592–2605.',
-                      temp_indep_coef=0.02)
+    mee = BinaryInterParm(comp_a=methanol, comp_b=ethane,
+                          phys_eos_spec=GS, eos='sPC-SAFT',
+                          source='J. Chem. Eng. Data 2017, 62, 2592–2605.',
+                          temp_indep_coef=0.02)
 
-mep = BinaryInterParm(comp_a=methanol, comp_b=propane,
-                      phys_eos_spec=GS, eos='sPC-SAFT',
-                      source='J. Chem. Eng. Data 2017, 62, 2592–2605.',
-                      temp_indep_coef=0.02)
+    mep = BinaryInterParm(comp_a=methanol, comp_b=propane,
+                          phys_eos_spec=GS, eos='sPC-SAFT',
+                          source='J. Chem. Eng. Data 2017, 62, 2592–2605.',
+                          temp_indep_coef=0.02)
 
-wme = BinaryInterParm(comp_a=water, comp_b=methanol,
-                      phys_eos_spec=GS, eos='sPC-SAFT',
-                      source='J. Chem. Eng. Data 2017, 62, 2592–2605.',
-                      temp_indep_coef=-0.066)
+    wme = BinaryInterParm(comp_a=water, comp_b=methanol,
+                          phys_eos_spec=GS, eos='sPC-SAFT',
+                          source='J. Chem. Eng. Data 2017, 62, 2592–2605.',
+                          temp_indep_coef=-0.066)
 
-cs = CompSet(comps=[ethane, propane])
+    cs = CompSet(comps=[ethane, propane])
 
-spc_saft_phys = PCSAFTPhysInter(comps=cs, eos='sPC-SAFT', pc_saft_spec=GS)
-spc_saft_phys.load_pure_comp_parms()
-spc_saft_phys.load_binary_parms([ee, ep, pp])
+    spc_saft_phys = PCSAFTPhysInter(comps=cs, eos='sPC-SAFT', pc_saft_spec=GS)
+    spc_saft_phys.load_pure_comp_parms()
+    spc_saft_phys.load_binary_parms([ee, ep, pp])
 
-print("---------------")
-print("seg_num: {}".format(spc_saft_phys.seg_num))
-print("seg_diam: {}".format(spc_saft_phys.seg_diam))
-print("disp_energy: {}".format(spc_saft_phys.disp_energy))
-print("k_ij: {}".format(spc_saft_phys.k_ij(298.15)))
+    print("---------------")
+    print("seg_num: {}".format(spc_saft_phys.seg_num))
+    print("seg_diam: {}".format(spc_saft_phys.seg_diam))
+    print("disp_energy: {}".format(spc_saft_phys.disp_energy))
+    print("k_ij: {}".format(spc_saft_phys.k_ij(298.15)))
 
-spc_saft = sPCSAFT(phys_inter=spc_saft_phys, assoc_inter=None)
+    spc_saft = sPCSAFT(phys_inter=spc_saft_phys, assoc_inter=None)
 
-phase = Phase(comps=cs, eos=spc_saft)
-phase.compos.set(xi=[0.2, 0.8])
-phase.state.spec = 'PT'
+    phase = Phase(comps=cs, eos=spc_saft)
+    phase.compos.set(xi=[0.2, 0.8])
+    phase.state.spec = 'PT'
 
-phase.state.set(p=50000000.0, t=400.0)
-p = phase.state.p
-vm = phase.state.vm
-t = phase.state.t
-ni = phase.compos.xi
-mw = phase.props.mw
-i = 0
-xai = None
+    phase.state.set(p=50000000.0, t=400.0)
+    p = phase.state.p
+    vm = phase.state.vm
+    t = phase.state.t
+    ni = phase.compos.xi
+    mw = phase.props.mw
+    i = 0
+    xai = None
 
-# Checking the values for all functions that make up sPC-SAFT.  The most important check is that the resulting f, f_v,
-# and f_i values equal their numeric derivatives. The
-print("---------------")
-print("p = {}".format(p))
-print("t = {}".format(t))
-print("vm = {}".format(vm))
-print("mw = {}".format(phase.props.mw))
-print("rho_m = {}".format(phase.props.rho_m))
-print("ni = {}".format(ni))
-print("rho = {}".format(phase.eos._rho(vm, ni)))
-print("v_a3 = {}".format(phase.eos._v_a3(vm)))
-print("m = {}".format(phase.eos._m(ni)))
-print("m_i = {}".format(phase.eos._m_i(ni)))
-print("di = {}".format(phase.eos._di(t)))
-print("d3 = {}".format(phase.eos._d3(t, ni)))
-print("d_i = {}".format(phase.eos._d_i(t, ni)))
-print("eta = {}".format(phase.eos._eta(t, vm, ni)))
-print("eta_v = {}".format(phase.eos._eta_v(t, vm, ni)))
-print("eta_i = {}".format(phase.eos._eta_i(t, vm, ni)))
-print("ghs = {}".format(phase.eos._ghs(t, vm, ni)))
-print("ghs_v = {}".format(phase.eos._ghs_v(t, vm, ni)))
-print("ghs_i = {}".format(phase.eos._ghs_i(t, vm, ni)))
-print("i1 = {}".format(phase.eos._i1(t, vm, ni)))
-print("i1_v = {}".format(phase.eos._i1_v(t, vm, ni)))
-print("i1_i = {}".format(phase.eos._i1_i(t, vm, ni)))
-print("i2 = {}".format(phase.eos._i2(t, vm, ni)))
-print("i2_v = {}".format(phase.eos._i2_v(t, vm, ni)))
-print("i2_i = {}".format(phase.eos._i2_i(t, vm, ni)))
-print("eps_ij = {}".format(phase.eos._epsij(t)))
-print("sig_ij = {}".format(phase.eos._sigij()))
-print("ai_i = {}".format(phase.eos._ai_i(2, ni)))
-print("bi_i = {}".format(phase.eos._bi_i(2, ni)))
-print("m2eps1sig3 = {}".format(phase.eos._m2eps1sig3(t, ni)))
-print("m2eps1sig3_i = {}".format(phase.eos._m2eps1sig3_i(t, ni)))
-print("m2eps2sig3 = {}".format(phase.eos._m2eps2sig3(t, ni)))
-print("m2eps2sig3_i = {}".format(phase.eos._m2eps2sig3_i(t, ni)))
-print("c0 = {}".format(phase.eos._c0(t, vm, ni)))
-print("c0_v = {}".format(phase.eos._c0_v(t, vm, ni)))
-print("c0_i = {}".format(phase.eos._c0_i(t, vm, ni)))
-print("c1 (as inverse of c0) = {}".format(1.0 / phase.eos._c0(t, vm, ni)))
-print("c1 = {}".format(phase.eos._c1(t, vm, ni)))
-print("c1_v = {}".format(phase.eos._c1_v(t, vm, ni)))
-print("c1_i = {}".format(phase.eos._c1_i(t, vm, ni)))
-print("fhs = {}".format(phase.eos._fhs(t, vm, ni)))
-print("fhs_v = {}".format(phase.eos._fhs_v(t, vm, ni)))
-print("fhs_i = {}".format(phase.eos._fhs_i(t, vm, ni)))
-print("fhc = {}".format(phase.eos._fhc(t, vm, ni)))
-print("fhc_v = {}".format(phase.eos._fhc_v(t, vm, ni)))
-print("fhc_i = {}".format(phase.eos._fhc_i(t, vm, ni)))
-print("fdisp = {}".format(phase.eos._fdisp(t, vm, ni)))
-print("fdisp1 = {}".format(phase.eos._fdisp1(t, vm, ni)))
-print("fdisp1_v = {}".format(phase.eos._fdisp1_v(t, vm, ni)))
-print("fdisp1_i = {}".format(phase.eos._fdisp1_i(t, vm, ni)))
-print("fdisp2 = {}".format(phase.eos._fdisp2(t, vm, ni)))
-print("fdisp2_v = {}".format(phase.eos._fdisp2_v(t, vm, ni)))
-print("fdisp2_i = {}".format(phase.eos._fdisp2_i(t, vm, ni)))
-print("fdisp_v = {}".format(phase.eos._fdisp_v(t, vm, ni)))
-print("fdisp_i = {}".format(phase.eos._fdisp_i(t, vm, ni)))
-print("f = {}".format(phase.eos._f(t, vm, ni, xai)))
-print("f_v = {}".format(phase.eos._f_v(t, vm, ni, xai)))
-print("f_v_num = {}".format(phase.eos._f_v_num(t, vm, ni, xai)))
-print("f_i = {}".format(phase.eos._f_i(t, vm, ni, xai)))
-print("f_i_num = {}".format(phase.eos._f_i_num_vect(t, vm, ni, xai)))
-print("ln_phi_j = {}".format(phase.eos.ln_phi_j(t, vm, ni, xai)))
+    # Checking the values for all functions that make up sPC-SAFT.  The most important check is that the resulting f, f_v,
+    # and f_i values equal their numeric derivatives. The
+    print("---------------")
+    print("p = {}".format(p))
+    print("t = {}".format(t))
+    print("vm = {}".format(vm))
+    print("mw = {}".format(phase.props.mw))
+    print("rho_m = {}".format(phase.props.rho_m))
+    print("ni = {}".format(ni))
+    print("rho = {}".format(phase.eos._rho(vm, ni)))
+    print("v_a3 = {}".format(phase.eos._v_a3(vm)))
+    print("m = {}".format(phase.eos._m(ni)))
+    print("m_i = {}".format(phase.eos._m_i(ni)))
+    print("di = {}".format(phase.eos._di(t)))
+    print("d3 = {}".format(phase.eos._d3(t, ni)))
+    print("d_i = {}".format(phase.eos._d_i(t, ni)))
+    print("eta = {}".format(phase.eos._eta(t, vm, ni)))
+    print("eta_v = {}".format(phase.eos._eta_v(t, vm, ni)))
+    print("eta_i = {}".format(phase.eos._eta_i(t, vm, ni)))
+    print("ghs = {}".format(phase.eos._ghs(t, vm, ni)))
+    print("ghs_v = {}".format(phase.eos._ghs_v(t, vm, ni)))
+    print("ghs_i = {}".format(phase.eos._ghs_i(t, vm, ni)))
+    print("i1 = {}".format(phase.eos._i1(t, vm, ni)))
+    print("i1_v = {}".format(phase.eos._i1_v(t, vm, ni)))
+    print("i1_i = {}".format(phase.eos._i1_i(t, vm, ni)))
+    print("i2 = {}".format(phase.eos._i2(t, vm, ni)))
+    print("i2_v = {}".format(phase.eos._i2_v(t, vm, ni)))
+    print("i2_i = {}".format(phase.eos._i2_i(t, vm, ni)))
+    print("eps_ij = {}".format(phase.eos._epsij(t)))
+    print("sig_ij = {}".format(phase.eos._sigij()))
+    print("ai_i = {}".format(phase.eos._ai_i(2, ni)))
+    print("bi_i = {}".format(phase.eos._bi_i(2, ni)))
+    print("m2eps1sig3 = {}".format(phase.eos._m2eps1sig3(t, ni)))
+    print("m2eps1sig3_i = {}".format(phase.eos._m2eps1sig3_i(t, ni)))
+    print("m2eps2sig3 = {}".format(phase.eos._m2eps2sig3(t, ni)))
+    print("m2eps2sig3_i = {}".format(phase.eos._m2eps2sig3_i(t, ni)))
+    print("c0 = {}".format(phase.eos._c0(t, vm, ni)))
+    print("c0_v = {}".format(phase.eos._c0_v(t, vm, ni)))
+    print("c0_i = {}".format(phase.eos._c0_i(t, vm, ni)))
+    print("c1 (as inverse of c0) = {}".format(1.0 / phase.eos._c0(t, vm, ni)))
+    print("c1 = {}".format(phase.eos._c1(t, vm, ni)))
+    print("c1_v = {}".format(phase.eos._c1_v(t, vm, ni)))
+    print("c1_i = {}".format(phase.eos._c1_i(t, vm, ni)))
+    print("fhs = {}".format(phase.eos._fhs(t, vm, ni)))
+    print("fhs_v = {}".format(phase.eos._fhs_v(t, vm, ni)))
+    print("fhs_i = {}".format(phase.eos._fhs_i(t, vm, ni)))
+    print("fhc = {}".format(phase.eos._fhc(t, vm, ni)))
+    print("fhc_v = {}".format(phase.eos._fhc_v(t, vm, ni)))
+    print("fhc_i = {}".format(phase.eos._fhc_i(t, vm, ni)))
+    print("fdisp = {}".format(phase.eos._fdisp(t, vm, ni)))
+    print("fdisp1 = {}".format(phase.eos._fdisp1(t, vm, ni)))
+    print("fdisp1_v = {}".format(phase.eos._fdisp1_v(t, vm, ni)))
+    print("fdisp1_i = {}".format(phase.eos._fdisp1_i(t, vm, ni)))
+    print("fdisp2 = {}".format(phase.eos._fdisp2(t, vm, ni)))
+    print("fdisp2_v = {}".format(phase.eos._fdisp2_v(t, vm, ni)))
+    print("fdisp2_i = {}".format(phase.eos._fdisp2_i(t, vm, ni)))
+    print("fdisp_v = {}".format(phase.eos._fdisp_v(t, vm, ni)))
+    print("fdisp_i = {}".format(phase.eos._fdisp_i(t, vm, ni)))
+    print("f = {}".format(phase.eos._f(t, vm, ni, xai)))
+    print("f_v = {}".format(phase.eos._f_v(t, vm, ni, xai)))
+    print("f_v_num = {}".format(phase.eos._f_v_num(t, vm, ni, xai)))
+    print("f_i = {}".format(phase.eos._f_i(t, vm, ni, xai)))
+    print("f_i_num = {}".format(phase.eos._f_i_num_vect(t, vm, ni, xai)))
+    print("ln_phi_j = {}".format(phase.eos.ln_phi_j(t, vm, ni, xai)))
 
-# Examples illustrating how the Corel class functions.
-print("---------------")
-print("Water vapor pressure correlation defined: {}".format(water.pvap.defined()))
-print("Water vapor pressure at triple point: {}".format(water.pvap(water.pvap.t_min)))
-print("Water vapor pressure at critical point: {}".format(water.pvap(water.pvap.t_max)))
+    # Examples illustrating how the Corel class functions.
+    print("---------------")
+    print("Water vapor pressure correlation defined: {}".format(water.pvap.defined()))
+    print("Water vapor pressure at triple point: {}".format(water.pvap(water.pvap.t_min)))
+    print("Water vapor pressure at critical point: {}".format(water.pvap(water.pvap.t_max)))
 
-print("Water ideal gas heat capacity correlation defined: {}".format(water.cp_ig.defined()))
-print("Water ideal gas heat capacity at triple point: {}".format(water.cp_ig(water.cp_ig.t_min)))
-print("Water ideal gas heat capacity at critical point: {}".format(water.cp_ig(water.cp_ig.t_max)))
+    print("Water ideal gas heat capacity correlation defined: {}".format(water.cp_ig.defined()))
+    print("Water ideal gas heat capacity at triple point: {}".format(water.cp_ig(water.cp_ig.t_min)))
+    print("Water ideal gas heat capacity at critical point: {}".format(water.cp_ig(water.cp_ig.t_max)))
 
-print("Water heat of vaporization correlation defined: {}".format(water.hvap.defined()))
-print("Water heat of vaporization at triple point: {}".format(water.hvap(water.hvap.t_min)))
-print("Water heat of vaporization at critical point: {}".format(water.hvap(water.hvap.t_max)))
+    print("Water heat of vaporization correlation defined: {}".format(water.hvap.defined()))
+    print("Water heat of vaporization at triple point: {}".format(water.hvap(water.hvap.t_min)))
+    print("Water heat of vaporization at critical point: {}".format(water.hvap(water.hvap.t_max)))
 
-phase1 = copy.deepcopy(phase)
+    phase1 = copy.deepcopy(phase)

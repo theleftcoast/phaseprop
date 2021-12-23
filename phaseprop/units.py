@@ -2,24 +2,8 @@
 
 Attributes
 ----------
-R : float
-    Universal gas constant, J/mol.K
-EC : float
-    Elementary charge, C
-KB : float
-    Boltzmann's constant, J/K
-NA : float
-    Avogadro's number, particles/mol
-C : float
-    Speed of light, m/s
-F : float
-    Faraday constant, C/mol
-PI : float
-    Mathematical constant
-E0 : float
-    Vacuum permittivity, F/m
 MASS : dict
-    Keys are units for mass and values are the conversion factor for that unit into kilograms (or 'kg')
+    Keys are units for mass and values are the conversion factor for that unit into kilograms (or 'kg').
 LENGTH : dict
     Keys are units for length and values are the conversion factor for that unit into meters (or 'm').
 AREA : dict
@@ -45,22 +29,14 @@ HEAT_CAPACITY : dict
 
 Notes
 -----
-Constants and conversion factors taken from Perry's Chemical Engineer's Handbook [1]_.
+Conversion factors taken from Perry's Chemical Engineer's Handbook [1]_.
 
 References
 ----------
 [1] Perry's Chemical Engineers' Handbook; Perry, R. H., Southard, M. Z., Eds.; McGraw-Hill Education: New York, 2019.
 """
 
-R = 8.31446261815324
-EC = 1.602176634*10**-19
-KB = 1.380649*10**-23
-NA = 6.02214076*10**23
-C = 299792458.0
-F = 96485.33212
-PI = 3.14159265358979323846
-E0 = 8.8541878128*10**-12
-
+# TODO:  Implement as frozen dictionaries.
 MASS = {'lbm': 0.45359,
         'st': 907.18,
         'lt': 1016.0,
@@ -134,6 +110,7 @@ HEAT_OF_VAPORIZATION = {"J/kmol": 0.001,
 HEAT_CAPACITY = {'J/kmol.K': 0.0001,
                  'J/mol.K': 1.0}
 
+# TODO:  Implement using frozen list.
 # Note that temperature is left out of this list because conversion is more than just multiplication by a constant.
 UNITS = [MASS, LENGTH, AREA, VOLUME, FORCE, PRESSURE, DENSITY, MOLAR_DENSITY, ENERGY, AMOUNT,
          HEAT_OF_VAPORIZATION, HEAT_CAPACITY]
