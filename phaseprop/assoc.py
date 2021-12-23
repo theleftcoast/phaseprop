@@ -1,7 +1,7 @@
 """Objects representing association sites and interactions."""
 
-from comps import *
-from eos import *
+from comps import Comp
+from eos import EOS
 
 # Pre-defined equation of state (EOS) pick lists.
 ASSOC_EOS = ['CPA', 'PC-SAFT', 'sPC-SAFT']

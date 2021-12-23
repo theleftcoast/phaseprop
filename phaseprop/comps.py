@@ -33,6 +33,11 @@ class Comp(object):
         ----------
         name : str
         """
+
+        # TODO: Do you need to check of both type and secondary housekeeping? Use def _post_init(self): from dataclass.
+        # TODO: Don't be defensive. Build folks awareness of what should be done. But don't check. Get/Set has cost.
+        # def validate(self): would return nothing if ok or raise descriptive error if there are problems.
+
         # General Attributes
         if name is None:
             raise ValueError("Comp object must be initialized with a name and molecular weight.")

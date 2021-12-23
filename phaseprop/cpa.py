@@ -2,22 +2,37 @@
 
 Attributes
 ----------
-PR : CubicSpec
-    Peng-Robinson equation of state with the Soave alpha function.
+PR : instance of CubicSpec
+    Peng-Robinson equation of state (Peng and Robinson, [1]_).
+GPR : instance of CubicSpec
+    Peng-Robinson equation of state with the Gasem alpha function (Gasem et al., [2]_).
+TPR : instance of CubicSpec
+    Peng-Robinson equation of state with the Twu alpha function (Twu et al., [3]_).
+SRK : instance of CubicSpec
+    Soave-Redlich-Kwong equation of state (Soave, [4]_).
+CPA : instance of CubicSpec
+    Cubic-plus-association equation of state (Kontogeorgis, [5, 6]_).
 
 Notes
 -----
 
+
 References
 ----------
-[1] Peng, D. Y.; Robinson, D. B. A New Two-Constant Equation of State. Ind. Eng. Chem. Fundamen. 1976, 15, 1,
-59–64.
-[2] Soave, G. Equilibrium constants from a modified Redlich-Kwong equation of state. Chem. Eng. Sci. 1975, 27, 6,
-1197–1203.
-[3] Gasem, K.; Gao, W.; Pan, Z; Robinson, R. L. A Modified Temperature Dependence for the Peng-Robinson Equation of
-UCLAjgg198849
-State. Fluid Phase Equilib. 2001, 181, 113-125.
+[1] Peng, D. Y.; Robinson, D. B. A New Two-Constant Equation of State. Ind. Eng. Chem. Fundamen. 1976, 15, 59–64.
+[2] Gasem, K. A. M.; Gao, W.; Pan, Z.; Robinson R. L. A modified temperature dependence for the Peng-Robinson equation
+of state. Fluid Phase Equilib. 2001, 181, 113-125.
+[3] Twu, C. H.; Bluck, D.; Cunningham, J. R.; Coon, J. E. A cubic equation of state with a new alpha function and a new
+mixing rule. Fluid Phase Equilib. 1991, 69, 33-50.
+[4] Soave, G. Equilibrium constants from a modified Redlich-Kwong equation of state. Fluid Phase Equilb. 1972, 27,
+1197-1203.
+[5] Kontogeorgis, G. M.; Voutsas, E. C.; Yakoumis, I. V.; Tassios, D. P. An Equation of State for Associating Fluids.
+Ind. Eng. Chem. Res. 1996, 35, 4310-4318.
+[6] Kontogeorgis, G. M.; Yakoumis, I. V.; Meijer, H.; Hendriks, E.; Moorwood, T. Multicomponent phase equilibrium
+calculations for water–methanol–alkane mixtures. Fluid Phase Equilib. 1999, 158-160, 201-209.
 """
+import numpy as np
+from eos import EOS
 
 
 class CubicSpec(object):
@@ -251,3 +266,57 @@ GPR = CubicSpec(1.0 + 2 ** 0.5, 0.0 - 2 ** 0.5, 'gasem')
 TPR = CubicSpec(1.0 + 2 ** 0.5, 0.0 - 2 ** 0.5, 'twu')
 SRK = CubicSpec(1.0, 0.0, 'soave')
 CPA = CubicSpec(1.0, 0.0, 'soave')
+
+
+class CubicParms(object):
+    """Cubic equation of state parameters"""
+
+
+class CubicPhysInter(object):
+    """Physical interactions between components."""
+
+
+class CPA(EOS):
+    """Generalized implementation of the Cubic Plus Association equation of state.
+
+    Attributes:
+        r: Ideal gas constant
+        a: Energy parameter
+        b: Co-volume parameter
+        v: Molar volume, 1/rho
+        rho: Molar density, 1/v
+        eta: Reduced fluid density, b/4*V
+
+    Methods:
+        p: Returns pressure when volume and temperature are specified
+        phi: Returns fugacity coefficients
+    """
+
+    def __init__(self, cubic_spec=None):
+        # Define a cubic equation of state.
+        if isinstance(cubic_spec, CubicSpec):
+            self.delta_1 = cubic_spec.delta_1
+            self.delta_2
+            self.alpha = self._soave
+        else:
+            raise ValueError("Must pass a CubicSpec instance to the constructor.")
+
+        # Lists of component objects, ci, and their concentrations, ni.
+        self.ci = []
+        self.ni = []
+
+    def p(self, t, v, a, b):
+        return self.r * t / (v - b) - a / ((v + self.d1 * b) * (v + self.d2 * b))
+
+    def z(self, t, v, a, b):
+        return 1.0 / (1.0 - b / v) - (a / (self.r * t * b)) * (b / v) / (
+                    (1.0 + self.d1 * b / v) * (1.0 + self.d2 * b / v))
+
+    def F(self, n, t, V, B, D):
+        return -n * g(V, B) - D(t) * f(V, B) / t
+
+    def g(self, V, B):
+        return np.log(V - B) - np.log(V)
+
+    def f(self, V, B):
+        return np.log((V + self.d1 * B) / (V + self.d2 * B)) / (self.r * B * (self.d1 - self.d2))

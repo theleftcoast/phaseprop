@@ -1,4 +1,4 @@
-"""Unit conversion.
+"""Physical constants.
 
 Attributes
 ----------
