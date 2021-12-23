@@ -143,6 +143,8 @@ gs_b = np.array([gs_b0, gs_b1, gs_b2, gs_b3, gs_b4, gs_b5, gs_b6])
 
 GS = PCSAFTSpec(a=gs_a, b=gs_b)
 
+# TODO:  Move this into its own module and make each dictionary entry a variable in the module.
+# TODO:  Stick all references into a module while you are at it.
 REFERENCES = {'DIPPR': "Rowley, R. L.; Wilding, W. V.; Oscarson, J. L.; Knotts, T. A.; Giles, N. F. DIPPR Data "
                        "Compilation of Pure Chemical Properties; Design Institute for Physical Properties, AIChE: New "
                        "York, NY, 2016.",
@@ -3381,11 +3383,15 @@ if __name__ == "__main__":
                                          source="Ind. Eng. Chem. Res. 2001, 40, 1244-1260.",
                                          seg_num=1.2053, seg_diam=3.3130, disp_energy=90.96)
 
+    # TODO: Break out constants for compounds into their own module.  Put all components into one Comps module.
+    # TODO: Break out binary interactions into one big module for all binary interactions.
     # Information from DIPPR tables presented in Perry's Chemical Engineer's Handbook, 9th ed.
     water = Comp('Water')
     water.formula = "H2O"
     water.family = "Inorganics"
     water.cas_no = "7732-18-5"
+    # TODO: mw: typing.Optional[float]
+    # TODO: mw: Optional[float] = None
     water.mw = 18.01528
     water.tc = 647.096
     water.pc = 22064000.0
