@@ -2,7 +2,7 @@
 
 import numpy as np
 from const import R
-from comps import Comp, PseudoComp
+from comp import Comp, PseudoComp
 
 
 class EOS(object):

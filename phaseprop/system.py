@@ -2,8 +2,8 @@
 import copy
 import numpy as np
 from scipy.optimize import minimize
-from utilities import Callback
-from comps import CompSet
+from utility import Callback
+from comp import CompSet
 from spc_saft import sPCSAFT
 from cpa import CPA
 

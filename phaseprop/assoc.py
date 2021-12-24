@@ -1,6 +1,6 @@
 """Objects representing association sites and interactions."""
 
-from comps import Comp
+from comp import Comp
 from eos import EOS
 
 # Pre-defined equation of state (EOS) pick lists.

@@ -22,7 +22,7 @@ COMP_FAM = ['Alkanes', 'Alkenes', 'Alkynes', 'Cycloalkanes' 'Aromatics', 'Polynu
             'Halogenated Hydrocarbons', 'Silanes', 'Inorganics', 'Multifunctional']
 
 import numpy as np
-from utilities import *
+from utility import *
 
 
 class Comp(object):

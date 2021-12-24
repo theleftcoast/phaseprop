@@ -14,7 +14,7 @@ Chem. Res. 2002, 41, 5510-5515.
 """
 import numpy as np
 from const import PI, NA
-from comps import Comp, PseudoComp, CompSet
+from comp import Comp, PseudoComp, CompSet
 from eos import BinaryInterParm, EOS
 from assoc import AssocInter
 
