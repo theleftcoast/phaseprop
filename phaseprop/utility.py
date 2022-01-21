@@ -1,7 +1,10 @@
 """Utility objects."""
 
+from math import inf
+from dataclasses import dataclass
+from typing import List, Set, Dict, Tuple, Optional, Callable, Union
 import numpy as np
-from units import *
+from unit import *
 
 
 class Callback(list):
@@ -56,10 +59,11 @@ class Callback(list):
         for d in self._delegates:
             d(*args, **kwargs)
 
+
 # TODO: Build a base class & subclass w/ specific correlations.  Corel1, Corel2, Corel3, etc.
 # TODO: Build w/ @dataclass
 class Corel(object):
-    """Pure component temperature dependent property."""
+    """Temperature dependent property."""
     def __init__(self, a=None, b=None, c=None, d=None, e=None, f=None, g=None, eq_id=None,
                  source_t_min=None, source_t_max=None, source_rmse=None, source_mae=None, source_mape=None,
                  source_t_unit=None, source_unit=None, source=None, notes=None):
@@ -389,7 +393,7 @@ class Corel(object):
         if self._source_rmse is None or self._source_unit is None:
             return None
         else:
-            return conv_to_si(self._source_rmse, self._source_unit)
+            return to_si(self._source_rmse, self._source_unit)
 
     @property
     def source_mae(self):
@@ -421,7 +425,7 @@ class Corel(object):
         if self._source_mae is None or self._source_unit is None:
             return None
         else:
-            return conv_to_si(self._source_mae, self._source_unit)
+            return to_si(self._source_mae, self._source_unit)
 
     @property
     def source_mape(self):
@@ -593,7 +597,7 @@ class Corel(object):
         elif not self.t_in_range(t=t) and relax_range is False:
             raise ValueError("t must be inside the range defined by t_min and t_max.")
         else:
-            return conv_to_si(self._derivative[self._eq_id](self._t_conv(t, self._source_t_unit)), self._source_unit)
+            return to_si(self._derivative[self._eq_id](self._t_conv(t, self._source_t_unit)), self._source_unit)
 
     # Do you really need None here.  Is that reasonable for all correlations?  Or do you want to set float defaults?
     # None vs 0 or inf or ....etc.  Set this for each Corel class.  Just hard code this.
@@ -625,8 +629,8 @@ class Corel(object):
         elif not self.t_in_range(t=t) and relax_range is False:
             raise ValueError("t must be inside the range defined by t_min and t_max.")
         else:
-            return conv_to_si(self._integral[self._eq_id](self._t_conv(t2, self._source_t_unit)) -
-                              self._integral[self._eq_id](self._t_conv(t1, self._source_t_unit)), self._source_unit)
+            return to_si(self._integral[self._eq_id](self._t_conv(t2, self._source_t_unit)) -
+                         self._integral[self._eq_id](self._t_conv(t1, self._source_t_unit)), self._source_unit)
 
     # TODO: t: float, etc....is a way to avoid type checking.
     def __call__(self, t=None, relax_range=False):
@@ -651,7 +655,7 @@ class Corel(object):
         elif not self.t_in_range(t=t) and relax_range is False:
             raise ValueError("t must be inside the range defined by t_min and t_max.")
         else:
-            return conv_to_si(self._correlation[self._eq_id](self._t_conv(t, self._source_t_unit)), self._source_unit)
+            return to_si(self._correlation[self._eq_id](self._t_conv(t, self._source_t_unit)), self._source_unit)
 
     def __eq__(self, other):
         if isinstance(other, Corel):
@@ -679,10 +683,192 @@ class Corel(object):
                      self._t_min, self._t_max, self._eq_id))
 
 
-class Var(object):
-    """Variable with metadata.
+class Const(float):
+    """Constant with metadata.
 
     Notes
     -----
-    TODO: Implement a float with units, uncertainty, source, and other useful metadata (similar to Corel class).
     """
+    def __new__(cls, value, source_unit=None, source=None, notes=None):
+        return float.__new__(cls, value)
+
+    def __init__(self, value, source_unit=None, source=None, notes=None):
+        super().__init__()
+        self.source_unit = source_unit
+        self.source = source
+        self.notes = notes
+
+    @property
+    def source_unit(self):
+        """str : Source unit for constant."""
+        return self._source_unit
+
+    @source_unit.setter
+    def source_unit(self, value):
+        if isinstance(value, str):
+            for conv_dict in UNITS:
+                if value in conv_dict:
+                    self._source_unit = value
+                    return
+            raise ValueError("source_unit is not defined.")
+        else:
+            raise TypeError("source_unit must be a string.")
+
+    @property
+    def unit(self):
+        """str : SI unit for constant."""
+        for conv_dict in UNITS:
+            if self._source_unit in conv_dict:
+                return si_unit(conv_dict)
+        raise ValueError("source_unit is not defined.")
+
+    @property
+    def source(self):
+        """str : Source for the constant (ACS citation format preferred)."""
+        return self._source
+
+    @source.setter
+    def source(self, value):
+        if value is None:
+            self._source = value
+        elif isinstance(value, str):
+            self._source = value
+        else:
+            raise TypeError("source must be a string.")
+
+    @property
+    def notes(self):
+        """str : Notes associated with the constant."""
+        return self._notes
+
+    @notes.setter
+    def notes(self, value):
+        if value is None:
+            self._notes = value
+        elif isinstance(value, str):
+            self._notes = value
+        else:
+            raise TypeError("notes must be a string.")
+
+
+@dataclass
+class ConstAlt(float):
+    """Constant with metadata.
+
+    Notes
+    -----
+
+    Parameters
+    ----------
+    value : float
+    unit : str
+    source : str
+    notes : str
+    """
+    # TODO:  Ask Matt how to do this with a dataclass.
+
+
+@dataclass
+class RiedelPvap(object):
+    """Riedel vapor pressure correlation with metadata.
+
+    Parameters
+    ----------
+    a : float, default: 0.0
+        Correlation parameter.
+    b : float, default: 0.0
+        Correlation parameter.
+    c : float, default: 0.0
+        Correlation parameter.
+    d : float, default: 0.0
+        Correlation parameter.
+    e : float, default: 0.0
+        Correlation parameter.
+    unit : str, default: 'Pa'
+        Output unit for correlation when evaluated with parameters a-e.
+    t_unit : float, default: 'K'
+        Output unit for correlation for evaluation with parameters a-e.
+    t_min : float, default: 0.1
+        Minimum temperature (in 'K').
+    t_max : float, default: inf
+        Maximum temperature (in 'K').
+    rmse : float, default: 0.0
+        Root mean squared error (in 'Pa').
+    mae : float, default: 0.0
+        Mean absolute error (in 'Pa')
+    mape : float, default: 0.0
+        Mean absolute percentage error (in 'Pa').
+    source : str, default: ""
+        Source for the correlation (ACS citation format preferred).
+    notes : str, default: ""
+        Notes associated with the correlation.
+
+    Notes
+    -----
+    Property correlations are developed in a variety of different unit systems. In this implementation, conversion to SI
+    units is accomplished automatically when the correlation is called (scaling correlation parameters before evaluation
+    is never recommended).
+
+    Several fit statistics are available to quantify how well a correlation represents experimental data (details for
+    each are provided below). These statistics are unfortunately not consistently provided the literature.
+
+        Root Mean Squared Error (RMSE):  Quadratic measure of average magnitude of error without considering direction.
+        Useful for uncertainty propagation analysis (notice the functional form is similar to the standard deviation).
+
+            RMSE = ((1/n) * sum_i((yi_meas - yi_model)**2.0))**0.5
+
+        Mean Absolute Error (MAE):  Measure of average magnitude of error without considering direction.
+
+            MAE = (1/n) * sum_i(abs(yi_meas - yi_model))
+
+        Mean Absolute Percentage Error (MAPE): Measure of average magnitude of error without considering direction.
+
+            MAPE = (1/n) * sum_i(abs((yi_meas - yi_model)/yi_meas)))
+
+    References
+    ----------
+    [1] Poling, B.E.; Praunitz, J.M.; O'Connell, J.P. The properties of gases and liquids, 5th ed.; McGraw-Hill, 2000.
+    """
+    a: float = 0.0
+    b: float = 0.0
+    c: float = 0.0
+    d: float = 0.0
+    e: float = 0.0
+    unit: str = 'Pa'
+    t_unit: str = 'K'
+    t_min: float = 0.1
+    t_max: float = inf
+    rmse: float = 0.0
+    mae: float = 0.0
+    mape: float = 0.0
+    source: str = ""
+    notes: str = ""
+
+    def _t_conv(self, t: float) -> float:
+        """Convert temperature from Kelvin to t_unit."""
+        conversion = {'F': lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
+                      'R': lambda t: t * 1.8,
+                      'C': lambda t: t - 273.15,
+                      'K': lambda t: t}
+        return conversion[self.t_unit](t)
+
+    def _corel(self, t: float) -> float:
+        return np.exp(self.a +
+                      self.b / t +
+                      self.c * np.log(t) +
+                      self.d * t ** self.e)
+
+    def __call__(self, t: float) -> float:
+        """Evaluate the vapor pressure.
+
+        Parameters
+        ----------
+        t : float
+            Temperature for evaluation (in 'K').
+
+        Returns
+        -------
+        float
+            Correlation evaluated at 't' (in 'Pa').
+        """
+        return to_si(self._corel(self._t_conv(t)), unit=self.unit)

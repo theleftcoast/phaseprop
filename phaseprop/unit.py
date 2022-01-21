@@ -26,6 +26,9 @@ AMOUNT : dict
     Keys are units for amount of substance and values are the conversion factor for that unit into moles (or 'mol').
 HEAT_CAPACITY : dict
     Keys are units for heat capacity and values are the conversion factor for that unit into 'J/mol.k'
+UNITS : dict
+    Combination of all unit conversion dictionaries.  Keys are units and values are the conversion factor for that
+    unit into the corresponding SI unit.
 
 Notes
 -----
@@ -110,76 +113,39 @@ HEAT_OF_VAPORIZATION = {"J/kmol": 0.001,
 HEAT_CAPACITY = {'J/kmol.K': 0.0001,
                  'J/mol.K': 1.0}
 
-# TODO:  Implement using frozen list.
-# Note that temperature is left out of this list because conversion is more than just multiplication by a constant.
-UNITS = [MASS, LENGTH, AREA, VOLUME, FORCE, PRESSURE, DENSITY, MOLAR_DENSITY, ENERGY, AMOUNT,
-         HEAT_OF_VAPORIZATION, HEAT_CAPACITY]
-
-SI_UNITS = {'kg': MASS,
-            'm': LENGTH,
-            'm2': AREA,
-            'm3': VOLUME,
-            'K': TEMPERATURE,
-            'N': FORCE,
-            'Pa': PRESSURE,
-            'kg/m3': DENSITY,
-            'mol/m3': MOLAR_DENSITY,
-            'J': ENERGY,
-            'mol': AMOUNT,
-            'J/mol': HEAT_OF_VAPORIZATION,
-            'J/mol.K': HEAT_CAPACITY}
+# Temperature is left out of this list because conversion is more than just multiplication by a constant.
+UNITS = {**MASS,
+         **LENGTH,
+         **AREA,
+         **VOLUME,
+         **FORCE,
+         **PRESSURE,
+         **DENSITY,
+         **MOLAR_DENSITY,
+         **ENERGY,
+         **AMOUNT,
+         **HEAT_OF_VAPORIZATION,
+         **HEAT_CAPACITY}
 
 
-def conv_to_si(value, unit):
+def to_si(value: float, unit: str) -> float:
     """Convert input to corresponding SI unit.
 
-    Handles cases where units are converted by scalar multiplication (i.e. everything but temperature conversion).
-
     Parameters
     ----------
-    value : float, list of float, or tuple of float
-        Input value(s) to be converted to corresponding SI unit.
+    value : float
+        Input value to be converted to corresponding SI unit.
     unit : str
-        Unit of the input value.
+        Unit of input value.
 
     Returns
     -------
-    float, list of float, or tuple of float
-        Value(s) converted to corresponding SI unit.
+    float
+        Value converted to corresponding SI unit.
     """
-    if isinstance(value, float):
-        for conv_dict in UNITS:
-            if unit in conv_dict:
-                return value * conv_dict[unit]
+    if unit in UNITS:
+        return value * UNITS[unit]
+    elif unit in TEMPERATURE:
+        return TEMPERATURE[unit](value)
+    else:
         raise ValueError("unit is not defined.")
-    elif isinstance(value, (list, tuple)) and all(isinstance(x, float) for x in value):
-        for conv_dict in UNITS:
-            if unit in conv_dict:
-                return [x * conv_dict[unit] for x in value]
-        raise ValueError("input_unit is not defined.")
-    else:
-        raise TypeError("input must be a float, list of floats, or tuple of floats.")
-
-
-def si_unit(conv_dict=None):
-    """Find the SI unit for a given unit conversion dictionary.
-
-    Parameters
-    ----------
-    conv_dict : dict
-        Unit conversion dictionary (keys are units and values are conversion factors for the corresponding SI unit).
-
-    Returns
-    -------
-    str
-        SI unit corresponding to input unit conversion dictionary.
-    """
-    if not isinstance(conv_dict, dict):
-        return TypeError("conv_dict must be a dictionary.")
-    elif conv_dict not in UNITS:
-        return ValueError("conv_dict must be a pre-defined unit conversion dictionary.")
-    else:
-        for key, value in SI_UNITS.items():
-            if value == conv_dict:
-                return key
-        return RuntimeError("conv_dict does not have a defined SI value.")
