@@ -7,8 +7,9 @@ from utility import Const, RiedelPvap
 from eos import BinaryInterParm
 from spc_saft import GS, sPCSAFTParms, sPCSAFTPhysInter, sPCSAFT
 from system import Phase
-from pure_comp_parm import methane, ethane, propane, water
-from unit import to_si
+from pure_comp_parms import methane, ethane, propane, water
+from units import to_si
+import pure_comp_parm as pcp
 
 if __name__ == "__main__":
     # Define association sites corresponding to water as a symmetrically associating 4C molecule.
@@ -41,7 +42,7 @@ if __name__ == "__main__":
     # Information from DIPPR tables presented in Perry's Chemical Engineer's Handbook, 9th ed.
     methanol = Comp('Methanol')
     methanol.formula = "CH3OH"
-    methanol.family = "Alcohols"
+    methanol.family = "alcohol"
     methanol.cas_no = "67-56-1"
     methanol.mw = 32.04186
     methanol.tc = 512.5
@@ -220,5 +221,26 @@ if __name__ == "__main__":
     print("Water heat of vaporization at triple point: {}".format(water.hvap(water.hvap.t_min)))
     print("Water heat of vaporization at critical point: {}".format(water.hvap(water.hvap.t_max)))
 
-    xyz = Const(1.234, source_unit='psi', source="my source", notes="nothing special")
-    lmn = Const(2.345, source_unit='Pa', source="my source", notes="nothing special")
+    pvap = RiedelPvap(a=73.649,
+                      b=-7258.2,
+                      c=-7.3037,
+                      d=4.1653 * 10 ** -6,
+                      e=2.0,
+                      unit='Pa',
+                      t_unit='K',
+                      t_min=273.16,
+                      t_max=647.1,
+                      source=refs.dippr)
+
+    print(pvap(pvap.t_min))
+    print(pvap(pvap.t_max))
+    print(pvap.source)
+    print(pvap.notes)
+
+    print(pcp.methane.name)
+    print(pcp.methane.cas_no)
+    print(pcp.methane.formula)
+    print(pcp.methane.family)
+    print(pcp.methane.mw)
+    print(pcp.methane.tc)
+    print(pcp.methane.pc)

@@ -2,14 +2,13 @@
 
 Attributes
 ----------
+RK : instance of CubicSpec
+    Redlich-Kwong equation of state functional specification.
 PR : instance of CubicSpec
-    Peng-Robinson equation of state (Peng and Robinson, [1]_).
-GPR : instance of CubicSpec
-    Peng-Robinson equation of state with the Gasem alpha function (Gasem et al., [2]_).
+    Peng-Robinson equation of state functional specification.
 TPR : instance of CubicSpec
     Peng-Robinson equation of state with the Twu alpha function (Twu et al., [3]_).
-SRK : instance of CubicSpec
-    Soave-Redlich-Kwong equation of state (Soave, [4]_).
+
 CPA : instance of CubicSpec
     Cubic-plus-association equation of state (Kontogeorgis, [5, 6]_).
 
@@ -33,177 +32,41 @@ calculations for water–methanol–alkane mixtures. Fluid Phase Equilib. 1999, 
 """
 import numpy as np
 from eos import EOS
+import dataclasses
+import typing
+import refs
 
 
+@dataclasses.dataclass
 class CubicSpec(object):
     """Constants and functions that define a specific version of the generalized cubic equation of state.
 
+    Parameters
+    ----------
+    delta_1 : float
+        Placeholder...need to define.
+    delta_2 : float
+        Placeholder...need to define.
+    source : str, optional
+        Source of the parameters (ACS citation format preferred).
+    notes : str, optional
+        Notes associated with the parameters.
+
     Notes
     -----
-    Generalized cubic equation of state functional form and thermodynamic properties are from [1]_.
+    Generalized cubic equation of state functional form and thermodynamic properties are defined in [1]_.
 
-    P = R*T/(v - b) - a*alpha(T)/((v + delta_1*b) * (v + delta_2*b))
+        P = R*T/(v - b) - a*alpha(T)/((v + delta_1*b) * (v + delta_2*b))
 
     References
     ----------
     [1] Michelsen, M. L.; Mollerup, J. Thermodynamic Models: Fundamental and Computational Aspects, 2nd ed.; Tie-Line
     Publications: Holte, Denmark, 2007.
     """
-
-    def __init__(self, delta_1=None, delta_2=None, alpha=None):
-        """
-        Parameters
-        ----------
-        delta_1 : float
-        delta_2 : float
-        alpha : str
-        """
-        if delta_1 is None or delta_2 is None or alpha is None:
-            raise ValueError("Inputs are not sufficient to define an instance of CubicSpec.")
-        else:
-            self.delta_1 = delta_1
-            self.delta_2 = delta_2
-            self.alpha = alpha
-
-    @property
-    def delta_1(self):
-        """delta_1 parameter for generalized cubic equation of state."""
-        return self._delta_1
-
-    @delta_1.setter
-    def delta_1(self, value):
-        try:
-            self._delta_1
-        except AttributeError:
-            if isinstance(value, float):
-                self._delta_1 = value
-            else:
-                raise ValueError("delta_1 must be a float.")
-
-    @property
-    def delta_2(self):
-        """delta_2 parameter for generalized cubic equation of state."""
-        return self._delta_2
-
-    @delta_2.setter
-    def delta_2(self, value):
-        try:
-            self._delta_2
-        except AttributeError:
-            if isinstance(value, float):
-                self._delta_2 = value
-            else:
-                raise ValueError("delta_2 must be a float.")
-
-    @property
-    def alpha(self):
-        """Alpha function for generalized cubic equation of state (either 'soave', 'gasem', or 'twu')."""
-        return self._alpha
-
-    @alpha.setter
-    def alpha(self, value):
-        try:
-            self._alpha
-        except AttributeError:
-            if value == 'soave':
-                self._alpha = self._soave
-            elif value == 'gasem':
-                self._alpha = self._gasem
-            elif value == 'twu':
-                self._alpha = self._twu
-            else:
-                raise ValueError("alpha must be a valid string.")
-
-    def _soave(self, tr, m):
-        """Soave alpha function.
-
-        Parameters
-        ----------
-        tr : float
-            Reduced temperature (defined as Tr = T / Tc).
-        m : float
-            Soave's slope parameter.
-
-        Returns
-        -------
-        float
-            Soave's alpha function evaluated at tr.
-
-        Notes
-        -----
-        Initial guess for nonpolar compounds: m = 0.48 + 1.574*acentric + 0.176*acentric**2
-
-        References
-        ----------
-        [1] Soave, G. Equilibrium constants from a modified Redlich-Kwong equation of state. Fluid Phase Equilb. 1972,
-        27, 1197-1203.
-        """
-        return (1.0 + m * (1.0 - tr ** 0.5)) ** 2.0
-
-    def _gasem(self, tr, a, b, c):
-        """Gasem alpha function.
-
-        Parameters
-        ----------
-        tr : float
-            Reduced temperature (defined as Tr = T / Tc).
-        a : float
-            Gasem model constant.
-        b : float
-            Gasem model constant.
-        c : float
-            Gasem model constant.
-
-        Returns
-        -------
-        float
-            Gasem's alpha function evaluated at tr.
-
-        Notes
-        -----
-        Initial guess for nonpolar compounds: a = 2.0, b = 0.836, c = 0.134+0.508*acentric+-0.0467*acentric**2
-        For hydrogen: a = -4.3, b = 10.4
-
-        References
-        ----------
-        [1] Gasem, K. A. M.; Gao, W.; Pan, Z.; Robinson R. L. A modified temperature dependence for the Peng-Robinson
-        equation of state. Fluid Phase Equilib. 2001, 181, 113-125.
-        """
-        return np.exp((a + b * tr) * (1.0 - tr ** c))
-
-    def _twu(self, tr, l, m, n):
-        """Twu alpha function.
-
-        Parameters
-        ----------
-        tr : float
-            Reduced temperature (defined as Tr = T / Tc).
-        l : float
-            Twu model constant.
-        m : float
-            Twu model constant.
-        n : float
-            Twu model constant.
-
-        Returns
-        -------
-        float
-            Twu's alpha function evaluated at tr.
-
-        Notes
-        -----
-        Generic parameters are unavailable.  However, there are large tables of pure component parameters that can be
-        used as a starting point for further optimization [2]_.
-
-        References
-        ----------
-        [1] Twu, C. H.; Bluck, D.; Cunningham, J. R.; Coon, J. E. A cubic equation of state with a new alpha function
-        and a new mixing rule. Fluid Phase Equilib. 1991, 69, 33-50.
-        [2] Le Guennec, Y.; Privat, R.; Jaubert. J. N. Development of the translated-consistent tc-PR and tc-RK cubic
-        equations of state for a safe and accurate prediction of volumetric, energetic and saturation properties of pure
-        compounds in the sub- and super-critical domains. Fluid Phase Equilib. 2016, 429, 301-312.
-        """
-        return np.exp(l * (1.0 - tr ** (n * m))) * (tr ** (n * (m - 1.0)))
+    delta_1: float
+    delta_2: float
+    source: typing.Optional[str] = None
+    notes: typing.Optional[str] = None
 
     def _d_1(self):
         """Intermediate variable used to evaluate critical properties."""
@@ -241,45 +104,339 @@ class CubicSpec(object):
         """Constant for bc if the CEOS is constrained to match Tc and Pc."""
         return self.z_b()
 
-    def __eq__(self, other):
-        if isinstance(other, CubicSpec):
-            delta_1_eq = self.delta_1 == other.delta_1
-            delta_2_eq = self.delta_2 == other.delta_2
-            alpha_eq = self.alpha == other.alpha
-            return delta_1_eq and delta_2_eq and alpha_eq
-        return False
 
-    def __ne__(self, other):
-        return not self.__eq__(other)
+RK = CubicSpec(delta_1=1.0,
+               delta_2=0.0,
+               source=refs.rk)
 
-    def __hash__(self):
-        return hash((self.delta_1, self.delta_2, self.alpha, self.vol_trans))
-
-    def __str__(self):
-        return "delta_1: ({}), delta_2: ({}), alpha: {}".format(self.delta_1,
-                                                                self.delta_2,
-                                                                self.alpha)
+PR = CubicSpec(delta_1=1.0 + 2 ** 0.5,
+               delta_2=0.0 - 2 ** 0.5,
+               source=refs.pr)
 
 
-PR = CubicSpec(1.0 + 2 ** 0.5, 0.0 - 2 ** 0.5, 'soave')
-GPR = CubicSpec(1.0 + 2 ** 0.5, 0.0 - 2 ** 0.5, 'gasem')
-TPR = CubicSpec(1.0 + 2 ** 0.5, 0.0 - 2 ** 0.5, 'twu')
-SRK = CubicSpec(1.0, 0.0, 'soave')
-CPA = CubicSpec(1.0, 0.0, 'soave')
+@dataclasses.dataclass
+class SoaveAlpha(object):
+    """Soave alpha function.
+
+    Parameters
+    ----------
+    m : float
+        Soave model parameter.
+    source : str, optional
+        Source of the parameters (ACS citation format preferred).
+    notes : str, optional
+        Notes associated with the parameters.
+
+    References
+    ----------
+    [1] Soave, G. Equilibrium constants from a modified Redlich-Kwong equation of state. Fluid Phase Equilb. 1972, 27,
+    1197-1203.
+    [2] Peng, D. Y.; Robinson, D. B. A New Two-Constant Equation of State. Ind. Eng. Chem. Fundamen. 1976, 15, 59–64.
+    """
+    m: float
+    source: typing.Optional[str] = None
+    notes: typing.Optional[str] = None
+
+    @staticmethod
+    def srk_m_from_acentric(acentric: float) -> float:
+        """Correlation to estimate SRK 'm' for nonpolar compounds."""
+        return 0.48 + 1.574 * acentric + 0.176 * acentric ** 2.0
+
+    @staticmethod
+    def pr_m_from_acentric(acentric: float) -> float:
+        """Correlation to estimate PR 'm' for nonpolar compounds."""
+        return 0.37464 + 1.54226 * acentric + 0.26992 * acentric ** 2.0
+
+    def __call__(self, tr: float) -> float:
+        """Soave alpha function.
+
+        Parameters
+        ----------
+        tr : float
+            Reduced temperature (defined as Tr = T / Tc).
+
+        Returns
+        -------
+        float
+            Soave's alpha function evaluated at tr.
+        """
+        return (1.0 + self.m * (1.0 - tr ** 0.5)) ** 2.0
 
 
-class CubicParms(object):
-    """Cubic equation of state parameters"""
+@dataclasses.dataclass
+class GasemAlpha(object):
+    """Gasem alpha function.
+
+    Parameters
+    ----------
+    a : float
+        Gasem model parameter.
+    b : float
+        Gasem model parameter.
+    c : float
+        Gasem model parameter.
+    source : str, optional
+        Source of the parameters (ACS citation format preferred).
+    notes : str, optional
+        Notes associated with the parameters.
+
+    Notes
+    -----
+    For nonpolar compounds, use a = 2.0 and b = 0.836
+    For hydrogen, use a = -4.3 and b = 10.4
+
+    References
+    ----------
+    [1] Gasem, K. A. M.; Gao, W.; Pan, Z.; Robinson R. L. A modified temperature dependence for the Peng-Robinson
+    equation of state. Fluid Phase Equilib. 2001, 181, 113-125.
+    """
+    a: float
+    b: float
+    c: float
+    source: typing.Optional[str] = None
+    notes: typing.Optional[str] = None
+
+    @staticmethod
+    def c_from_acentric(acentric: float) -> float:
+        """Correlation to estimate Gasem 'c' for nonpolar compounds."""
+        return 0.134 + 0.508 * acentric - 0.0467 * acentric ** 2.0
+
+    def __call__(self, tr: float) -> float:
+        """Gasem alpha function.
+
+        Parameters
+        ----------
+        tr : float
+            Reduced temperature (defined as Tr = T / Tc).
+
+        Returns
+        -------
+        float
+            Gasem's alpha function evaluated at tr.
+        """
+        return np.exp((self.a + self.b * tr) * (1.0 - tr ** self.c))
+
+
+@dataclasses.dataclass
+class TwuAlpha(object):
+    """Twu alpha function.
+
+    Parameters
+    ----------
+    l : float
+        Twu model parameter.
+    m : float
+        Twu model parameter.
+    n : float
+        Twu model parameter.
+    source : str, optional
+        Source of the parameters (ACS citation format preferred).
+    notes : str, optional
+        Notes associated with the parameters.
+
+
+    References
+    ----------
+    [1] Twu, C. H.; Bluck, D.; Cunningham, J. R.; Coon, J. E. A cubic equation of state with a new alpha function
+    and a new mixing rule. Fluid Phase Equilib. 1991, 69, 33-50.
+    [2] Le Guennec, Y.; Privat, R.; Jaubert. J. N. Development of the translated-consistent tc-PR and tc-RK cubic
+    equations of state for a safe and accurate prediction of volumetric, energetic and saturation properties of pure
+    compounds in the sub- and super-critical domains. Fluid Phase Equilib. 2016, 429, 301-312.
+    """
+    l: float
+    m: float
+    n: float
+    source: typing.Optional[str] = None
+    notes: typing.Optional[str] = None
+
+    def __call__(self, tr: float) -> float:
+        """Twu's alpha function.
+
+        Parameters
+        ----------
+        tr : float
+            Reduced temperature (defined as Tr = T / Tc).
+
+        Returns
+        -------
+        float
+            Twu's alpha function evaluated at tr.
+        """
+        return np.exp(self.l * (1.0 - tr ** (self.n * self.m))) * (tr ** (self.n * (self.m - 1.0)))
+
+
+@dataclasses.dataclass
+class SRKParms(object):
+    """Soave's Redlich-Kwong equation of state parameters.
+
+    Parameters
+    ----------
+    a : float
+        Attractive parameter.
+    b : float
+        Repulsive parameter.
+    alpha : SoaveAlpha
+        Soave alpha function.
+    source : str, optional
+        Source of the parameters (ACS citation format preferred).
+    notes : str, optional
+        Notes associated with the parameters.
+
+    References
+    ----------
+    [1] Soave, G. Equilibrium constants from a modified Redlich-Kwong equation of state. Fluid Phase Equilb. 1972, 27,
+    1197-1203.
+    """
+    a: float
+    b: float
+    alpha: SoaveAlpha
+    source: typing.Optional[str] = None
+    notes: typing.Optional[str] = None
+
+
+@dataclasses.dataclass
+class CPAParms(object):
+    """Cubic Plus Association equation of state parameters.
+
+    Parameters
+    ----------
+    a : float
+        Attractive parameter.
+    b : float
+        Repulsive parameter.
+    alpha : SoaveAlpha
+        Soave alpha function.
+    source : str, optional
+        Source of the parameters (ACS citation format preferred).
+    notes : str, optional
+        Notes associated with the parameters.
+
+    References
+    ----------
+    [1] Kontogeorgis, G. M.; Voutsas, E. C.; Yakoumis, I. V.; Tassios, D. P. An Equation of State for Associating
+    Fluids. Ind. Eng. Chem. Res. 1996, 35, 4310-4318.
+    [2] Kontogeorgis, G. M.; Yakoumis, I. V.; Meijer, H.; Hendriks, E.; Moorwood, T. Multicomponent phase equilibrium
+    calculations for water–methanol–alkane mixtures. Fluid Phase Equilib. 1999, 158-160, 201-209.
+    """
+    a: float
+    b: float
+    alpha: SoaveAlpha
+    source: typing.Optional[str] = None
+    notes: typing.Optional[str] = None
+
+    @staticmethod
+    def a_from_a0(a: float) -> float:
+        """Convert a0 to a."""
+        # TODO: Build this out further.
+        return a
+
+    @staticmethod
+    def b_from_b(b: float) -> float:
+        # TODO: Build this out further.
+        """Convert b to b."""
+        return b
+
+    @staticmethod
+    def m_from_c1(c1: float) -> float:
+        # TODO: Build this out further.
+        """Convert c1 to m."""
+        return c1
+
+
+@dataclasses.dataclass
+class PRParms(object):
+    """Peng-Robinson equation of state parameters.
+
+    Parameters
+    ----------
+    a : float
+        Attractive parameter.
+    b : float
+        Repulsive parameter.
+    alpha : SoaveAlpha
+        Soave alpha function.
+    source : str, optional
+        Source of the parameters (ACS citation format preferred).
+    notes : str, optional
+        Notes associated with the parameters.
+
+    References
+    ----------
+    [1] Peng, D. Y.; Robinson, D. B. A New Two-Constant Equation of State. Ind. Eng. Chem. Fundamen. 1976, 15, 59–64.
+    """
+    a: float
+    b: float
+    alpha: SoaveAlpha
+    source: typing.Optional[str] = None
+    notes: typing.Optional[str] = None
+
+
+@dataclasses.dataclass
+class GPRParms(object):
+    """Gasem's Peng-Robinson equation of state parameters.
+
+    Parameters
+    ----------
+    a : float
+        Attractive parameter.
+    b : float
+        Repulsive parameter.
+    alpha : SoaveAlpha
+        Soave alpha function.
+    source : str, optional
+        Source of the parameters (ACS citation format preferred).
+    notes : str, optional
+        Notes associated with the parameters.
+
+    References
+    ----------
+    [1] Gasem, K. A. M.; Gao, W.; Pan, Z.; Robinson R. L. A modified temperature dependence for the Peng-Robinson
+    equation of state. Fluid Phase Equilib. 2001, 181, 113-125.
+    """
+    a: float
+    b: float
+    alpha: GasemAlpha
+    source: typing.Optional[str] = None
+    notes: typing.Optional[str] = None
+
+
+@dataclasses.dataclass
+class TPRParms(object):
+    """Twu's Peng-Robinson equation of state parameters.
+
+    Parameters
+    ----------
+    a : float
+        Attractive parameter.
+    b : float
+        Repulsive parameter.
+    alpha : SoaveAlpha
+        Soave alpha function.
+    source : str, optional
+        Source of the parameters (ACS citation format preferred).
+    notes : str, optional
+        Notes associated with the parameters.
+
+    References
+    ----------
+    [3] Twu, C. H.; Bluck, D.; Cunningham, J. R.; Coon, J. E. A cubic equation of state with a new alpha function and a
+    new mixing rule. Fluid Phase Equilib. 1991, 69, 33-50.
+    """
+    a: float
+    b: float
+    alpha: GasemAlpha
+    source: typing.Optional[str] = None
+    notes: typing.Optional[str] = None
 
 
 class CubicPhysInter(object):
     """Physical interactions between components."""
 
 
-class CPA(EOS):
-    """Generalized implementation of the Cubic Plus Association equation of state.
+class Cubic(EOS):
+    """Generalized implementation of the cubic equation of state.
 
-    Attributes:
+    Attributes:cubic_spec
         r: Ideal gas constant
         a: Energy parameter
         b: Co-volume parameter

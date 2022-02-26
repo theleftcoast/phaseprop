@@ -2,7 +2,7 @@
 
 Attributes
 ----------
-COMP_FAM : list
+FAMILY : list
     Pre-defined component family pick list based on definitions in _[1] and _[2].
 
 Notes
@@ -15,14 +15,38 @@ References
 [2] Tihic, A.; Kontogeorgis, G. M.; von Solms, N.;Michelsen, M. L. Applications of the simplified perturbed-chain SAFT
 equation of state using an extended parameter table. Fluid Phase Equilib. 2006, 248, 29-43.
 """
-
-COMP_FAM = ['Alkanes', 'Alkenes', 'Alkynes', 'Cycloalkanes' 'Aromatics', 'Polynuclear Aromatics', 'Aldehydes',
-            'Ketones', 'Heterocyclics', 'Elements', 'Alcohols', 'Phenols', 'Ethers', 'Acids', 'Esters', 'Amines',
-            'Amides', 'Nitriles', 'Nitro Compounds', 'Isocyanates', 'Mercaptans', 'Sulfides',
-            'Halogenated Hydrocarbons', 'Silanes', 'Inorganics', 'Multifunctional']
-
 import numpy as np
-from utility import *
+import dataclasses
+import utility
+from utility import Corel
+import typing
+
+FAMILY = ['alkane',
+          'alkene',
+          'alkyne',
+          'cycloalkane' 
+          'aromatic',
+          'polynuclear aromatic',
+          'aldehyde',
+          'ketone',
+          'heterocyclic',
+          'element',
+          'alcohol',
+          'phenol',
+          'ether',
+          'acid',
+          'ester',
+          'amine',
+          'amide',
+          'nitrile',
+          'nitro compound',
+          'isocyanate',
+          'mercaptan',
+          'sulfide',
+          'halogenated hydrocarbon',
+          'silane',
+          'inorganic',
+          'multifunctional']
 
 
 class Comp(object):
@@ -154,7 +178,7 @@ class Comp(object):
     @family.setter
     def family(self, value):
         if isinstance(value, str) or value is None:
-            if value in COMP_FAM or value is None:
+            if value in FAMILY or value is None:
                 self._family = value
             else:
                 raise ValueError("family must be one of the pre-defined values.")
@@ -995,3 +1019,54 @@ class CompSet(object):
         for comp in self._comps:
             result.append(comp.name)
         return ",".join(tuple(result))
+
+
+@dataclasses.dataclass
+class CompAlt(object):
+    # Metadata and constants.
+    name: str
+    cas_no: typing.Optional[str] = None
+    formula: typing.Optional[str] = None
+    family: typing.Optional[str] = None
+    mw: typing.Optional[typing.Union[float, utility.Const]] = None
+    vdwv: typing.Optional[typing.Union[float, utility.Const]] = None
+    vdwa: typing.Optional[typing.Union[float, utility.Const]] = None
+    rgyr: typing.Optional[typing.Union[float, utility.Const]] = None
+    dipole: typing.Optional[typing.Union[float, utility.Const]] = None
+    quadrupole: typing.Optional[typing.Union[float, utility.Const]] = None
+    acentric: typing.Optional[typing.Union[float, utility.Const]] = None
+    tc: typing.Optional[typing.Union[float, utility.Const]] = None
+    pc: typing.Optional[typing.Union[float, utility.Const]] = None
+    vc: typing.Optional[typing.Union[float, utility.Const]] = None
+    rhoc: typing.Optional[typing.Union[float, utility.Const]] = None
+    tt: typing.Optional[typing.Union[float, utility.Const]] = None
+    pt: typing.Optional[typing.Union[float, utility.Const]] = None
+    bp: typing.Optional[typing.Union[float, utility.Const]] = None
+    mp: typing.Optional[typing.Union[float, utility.Const]] = None
+    hfus: typing.Optional[typing.Union[float, utility.Const]] = None
+    hsub: typing.Optional[typing.Union[float, utility.Const]] = None
+    ig_hform: typing.Optional[typing.Union[float, utility.Const]] = None
+    ig_gform: typing.Optional[typing.Union[float, utility.Const]] = None
+    ig_entr: typing.Optional[typing.Union[float, utility.Const]] = None
+    hcomb: typing.Optional[typing.Union[float, utility.Const]] = None
+
+    # Temperature dependent properties.
+    pvap_l: typing.Optional[utility.RiedelPvap] = None
+    hvap_l: typing.Optional[utility.PerryHvap] = None
+    # den_s: typing.Optional[float] = None
+    den_l: typing.Optional[typing.Union[utility.DaubertDenL, utility.IAPWSDenL]] = None
+    # beta_s: typing.Optional[float] = None
+    # beta_l: typing.Optional[float] = None
+    # cp_s: typing.Optional[float] = None
+    cp_l: typing.Optional[typing.Union[utility.PolyCpL, utility.DIPPRCpL]] = None
+    cp_ig: typing.Optional[utility.AlyLeeCpIg] = None
+    visc_l: typing.Optional[utility.AndradeViscL] = None
+    visc_ig: typing.Optional[float] = None
+    tcond_s: typing.Optional[float] = None
+    tcond_l: typing.Optional[float] = None
+    tcond_ig: typing.Optional[float] = None
+    sigma: typing.Optional[float] = None
+
+    def __post_init__(self):
+        if self.family not in FAMILY:
+            raise ValueError("family not valid.")
