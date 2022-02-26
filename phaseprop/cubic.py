@@ -6,29 +6,6 @@ RK : instance of CubicSpec
     Redlich-Kwong equation of state functional specification.
 PR : instance of CubicSpec
     Peng-Robinson equation of state functional specification.
-TPR : instance of CubicSpec
-    Peng-Robinson equation of state with the Twu alpha function (Twu et al., [3]_).
-
-CPA : instance of CubicSpec
-    Cubic-plus-association equation of state (Kontogeorgis, [5, 6]_).
-
-Notes
------
-
-
-References
-----------
-[1] Peng, D. Y.; Robinson, D. B. A New Two-Constant Equation of State. Ind. Eng. Chem. Fundamen. 1976, 15, 59–64.
-[2] Gasem, K. A. M.; Gao, W.; Pan, Z.; Robinson R. L. A modified temperature dependence for the Peng-Robinson equation
-of state. Fluid Phase Equilib. 2001, 181, 113-125.
-[3] Twu, C. H.; Bluck, D.; Cunningham, J. R.; Coon, J. E. A cubic equation of state with a new alpha function and a new
-mixing rule. Fluid Phase Equilib. 1991, 69, 33-50.
-[4] Soave, G. Equilibrium constants from a modified Redlich-Kwong equation of state. Fluid Phase Equilb. 1972, 27,
-1197-1203.
-[5] Kontogeorgis, G. M.; Voutsas, E. C.; Yakoumis, I. V.; Tassios, D. P. An Equation of State for Associating Fluids.
-Ind. Eng. Chem. Res. 1996, 35, 4310-4318.
-[6] Kontogeorgis, G. M.; Yakoumis, I. V.; Meijer, H.; Hendriks, E.; Moorwood, T. Multicomponent phase equilibrium
-calculations for water–methanol–alkane mixtures. Fluid Phase Equilib. 1999, 158-160, 201-209.
 """
 import numpy as np
 from eos import EOS
@@ -267,7 +244,7 @@ class TwuAlpha(object):
 
 @dataclasses.dataclass
 class SRKParms(object):
-    """Soave's Redlich-Kwong equation of state parameters.
+    """Soave's Redlich-Kwong equation of state parameters for a single component.
 
     Parameters
     ----------
@@ -296,7 +273,7 @@ class SRKParms(object):
 
 @dataclasses.dataclass
 class CPAParms(object):
-    """Cubic Plus Association equation of state parameters.
+    """Cubic Plus Association equation of state parameters for a single component.
 
     Parameters
     ----------
@@ -345,7 +322,7 @@ class CPAParms(object):
 
 @dataclasses.dataclass
 class PRParms(object):
-    """Peng-Robinson equation of state parameters.
+    """Peng-Robinson equation of state parameters for a single component.
 
     Parameters
     ----------
@@ -373,7 +350,7 @@ class PRParms(object):
 
 @dataclasses.dataclass
 class GPRParms(object):
-    """Gasem's Peng-Robinson equation of state parameters.
+    """Gasem's Peng-Robinson equation of state parameters for a single component.
 
     Parameters
     ----------
@@ -402,7 +379,7 @@ class GPRParms(object):
 
 @dataclasses.dataclass
 class TPRParms(object):
-    """Twu's Peng-Robinson equation of state parameters.
+    """Twu's Peng-Robinson equation of state parameters for a single component.
 
     Parameters
     ----------

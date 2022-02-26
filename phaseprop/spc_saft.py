@@ -17,6 +17,9 @@ from const import PI, NA
 from comp import Comp, PseudoComp, CompSet
 from eos import BinaryInterParm, EOS
 from assoc import AssocInter
+import dataclasses
+import typing
+
 
 class sPCSAFTSpec(object):
     """Constants that define a specific version of the sPC-SAFT equation of state."""
@@ -105,156 +108,67 @@ gs_b = np.array([gs_b0, gs_b1, gs_b2, gs_b3, gs_b4, gs_b5, gs_b6])
 GS = sPCSAFTSpec(a=gs_a, b=gs_b)
 
 
+@dataclasses.dataclass
 class sPCSAFTParms(object):
-    def __init__(self, comp=None, spc_saft_spec=None, source=None,
-                 seg_num=None, seg_diam=None, disp_energy=None, ck_const=0.12):
-        if comp is None or spc_saft_spec is None:
-            raise ValueError("comp and pc_saft_spec must be provided to create an instance of PCSAFTParms.")
-        else:
-            self.comp = comp
-            self.spc_saft_spec = spc_saft_spec
-            self.source = source
-            self.seg_num = seg_num
-            self.seg_diam = seg_diam
-            self.disp_energy = disp_energy
-            self.ck_const = ck_const
+    """Simplified PC-SAFT equation of state parameters for a single component.
 
-    @property
-    def comp(self):
-        return self._comp
+    Parameters
+    ----------
+    seg_num : float
+        Segment number.
+    seg_diam : float
+        Segment diameter.
+    disp_energy : float
+        Soave alpha function.
+    ck_const : float
+        Chen and Kreglewski parameter (usually set to 0.12, except for hydrogen and helium).
+        # TODO: change name to not imply this is a constant...maybe ck_parm.
+    source : str, optional
+        Source of the parameters (ACS citation format preferred).
+    notes : str, optional
+        Notes associated with the parameters.
 
-    @comp.setter
-    def comp(self, value):
-        try:
-            self._comp
-        except AttributeError:
-            if isinstance(value, (Comp, PseudoComp)):
-                self._comp = value
-            else:
-                raise TypeError("comp must be an instance of Comp or PseudoComp.")
+    Notes
+    -----
+    Chen and Kreglewski temperature-dependent integral parameter is 0.12 for nearly all compounds. However, it can be
+    set to 0.241 for hydrogen (see eq 2-6 in de Villers' PhD thesis and eq 2-10 in Tihic's PhD thesis). This is a useful
+    correction for quantum gases (hydrogen and helium).
 
-    @property
-    def spc_saft_spec(self):
-        return self._spc_saft_spec
 
-    @spc_saft_spec.setter
-    def spc_saft_spec(self, value):
-        try:
-            self._spc_saft_spec
-        except AttributeError:
-            if isinstance(value, sPCSAFTSpec):
-                self._spc_saft_spec = value
-            else:
-                raise TypeError("spc_saft_spec must be an instance of sPCSAFTSpec.")
+    References
+    ----------
+    [1] TODO: Find de Villers' reference.
+    [2] Tihic, A.; Kontogeorgis, G.M.; von Solms, N.; Michelsen, M.L. Applications of the simplified perturbed-chain
+    SAFT equation of state using an extended parameter table. Fluid Phase Equilib. 2006, 248, 29-43.
+    """
+    seg_num: float
+    seg_diam: float
+    disp_energy: float
+    ck_const: float = 0.12
+    source: typing.Optional[str] = None
+    notes: typing.Optional[str] = None
 
-    @property
-    def source(self):
-        return self._source
+    def init_parms(self, mw: float = 86.18, family: str = 'alkanes'):
+        """Initialize pure component parameters as a starting point for optimization routines.
+        TODO: Add other component families.
 
-    @source.setter
-    def source(self, value):
-        if value is None:
-            self._source = value
-        elif isinstance(value, str):
-            self._source = value
-        else:
-            raise ValueError("source must be a string.")
+        Parameters
+        ----------
+        mw : float
+            Molecular weight (in g/mol, default value corresponds to hexane).
+        family : str
+            Chemical family.
 
-    @property
-    def seg_num(self):
-        return self._seg_num
-
-    @seg_num.setter
-    def seg_num(self, value):
-        if value is None:
-            self._seg_num = value
-        elif isinstance(value, float):
-            self._seg_num = value
-        else:
-            raise ValueError("seg_num must be a float.")
-
-    @property
-    def seg_diam(self):
-        return self._seg_diam
-
-    @seg_diam.setter
-    def seg_diam(self, value):
-        if value is None:
-            self._seg_diam = value
-        elif isinstance(value, float):
-            self._seg_diam = value
-        else:
-            raise ValueError("seg_diam must be a float.")
-
-    @property
-    def disp_energy(self):
-        return self._disp_energy
-
-    @disp_energy.setter
-    def disp_energy(self, value):
-        if value is None:
-            self._disp_energy = value
-        elif isinstance(value, float):
-            self._disp_energy = value
-        else:
-            raise ValueError("disp_energy must be a float.")
-
-    @property
-    def ck_const(self):
-        # Chen and Kreglewski temperature-dependent integral parameter is 0.12 for nearly all compounds. However, it can
-        # be set to 0.241 for hydrogen (see eq 2-6 in de Villers' PhD thesis and eq 2-10 in Tihic's PhD thesis). This
-        # is a useful correction for the quantum gases (hydrogen and helium).
-        return self._ck_const
-
-    @ck_const.setter
-    def ck_const(self, value):
-        if value is None:
-            self._ck_const = value
-        elif isinstance(value, float):
-            self._ck_const = value
-        else:
-            raise ValueError("ck_const must be a float.")
-
-    def __eq__(self, other):
-        if isinstance(other, sPCSAFTParms):
-            comp_eq = self.comp == other.comp
-            spec_eq = self.spc_saft_spec == other.spc_saft_spec
-            return comp_eq and spec_eq
-        return False
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def __hash__(self):
-        return hash((hash(self.comp), hash(self.spc_saft_spec)))
-
-    def defined(self):
-        sn = self.seg_num is not None
-        sd = self.seg_diam is not None
-        de = self.disp_energy is not None
-        ck = self.ck_const is not None
-        return sn and sd and de and ck
-
-    def init_parms(self):
-        # Initialize pure component parameters as a starting point for optimization routines.
-        #
-        # PC-SAFT parameter correlations taken from the following sources:
-        #   (1) Tihic, A.; Kontogeorgis, G.M.; von Solms, N.; Michelsen, M.L. Applications of the simplified perturbed-
-        #   chain SAFT equation of state using an extended parameter table. Fluid Phase Equilib. 2006, 248, 29-43.
-        #
-        # PC-SAFT parameters for n-hexane taken from the following source:
-        #   (2) Gross, J.; Sadowski, G. Perturbed-Chain SAFT: An Equation of State Based on a Perturbation Theory for
-        #   Chain Molecules.  Ind. Eng. Chem. Res. 2001, 40, 1244–1260.
-        #
-        # TODO: Define parameter estimation correlations based on component family.
-        if self._comp.mw is not None:
-            self._seg_num = 0.0249 * self._comp.mw + 0.9711
-            self._seg_diam = ((1.6947 * self._comp.mw + 23.27) / self._seg_num) ** 0.33333
-            self._disp_energy = (6.5446 * self._comp.mw + 177.92) / self._seg_num
-        else:
-            self._seg_num = 3.0576
-            self._seg_diam = 3.7983
-            self._disp_energy = 236.77
+        References
+        ----------
+        [1] Tihic, A.; Kontogeorgis, G.M.; von Solms, N.; Michelsen, M.L. Applications of the simplified perturbed-chain
+        SAFT equation of state using an extended parameter table. Fluid Phase Equilib. 2006, 248, 29-43.
+        """
+        if family == 'alkanes':
+            self.seg_num = 0.0249 * mw + 0.9711
+            self.seg_diam = ((1.6947 * mw + 23.27) / self._seg_num) ** 0.33333
+            self.disp_energy = (6.5446 * mw + 177.92) / self._seg_num
+            self.ck_const = 0.12
 
 
 class sPCSAFTPhysInter(object):

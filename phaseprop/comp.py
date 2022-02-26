@@ -20,6 +20,8 @@ import dataclasses
 import utility
 from utility import Corel
 import typing
+import cubic
+import spc_saft
 
 FAMILY = ['alkane',
           'alkene',
@@ -1066,6 +1068,21 @@ class CompAlt(object):
     tcond_l: typing.Optional[float] = None
     tcond_ig: typing.Optional[float] = None
     sigma: typing.Optional[float] = None
+
+    # Cubic EOS physical parameter dictionaries.
+    srk_phys = typing.Optional[cubic.SRKParms] = None
+    cpa_phys = typing.Optional[cubic.CPAParms] = None
+    pr_phys = typing.Optional[cubic.PRParms] = None
+    gpr_phys = typing.Optional[cubic.GPRParms] = None
+    tpr_phys = typing.Optional[cubic.TPRParms] = None
+
+    # SAFT EOS physical parameter dictionaries.
+    spc_saft_phys = typing.Optional[spc_saft.sPCSAFTParms] = None
+
+    # SAFT EOS association parameter objects.
+    assoc_sites = typing.Optional[list] = None
+    cpa_assoc = typing.Optional[list] = None
+    spc_saft_assoc = typing.Optional[list] = None
 
     def __post_init__(self):
         if self.family not in FAMILY:

@@ -16,10 +16,10 @@ methane.pc = 4599000.0
 methane.vc = 0.0000986
 methane.acentric = 0.0115478
 
-methane.spc_saft_phys = sPCSAFTParms(comp=methane,
-                                    spc_saft_spec=GS,
-                                    source="Ind. Eng. Chem. Res. 2001, 40, 1244-1260.",
-                                    seg_num=1.0, seg_diam=3.7039, disp_energy=150.03)
+# methane.spc_saft_phys = sPCSAFTParms(comp=methane,
+#                                     spc_saft_spec=GS,
+#                                     source="Ind. Eng. Chem. Res. 2001, 40, 1244-1260.",
+#                                     seg_num=1.0, seg_diam=3.7039, disp_energy=150.03)
 
 # Information from DIPPR tables presented in Perry's Chemical Engineer's Handbook, 9th ed.
 ethane = Comp('Ethane')
@@ -33,10 +33,10 @@ ethane.vc = 0.0001455
 ethane.acentric = 0.099493
 
 # Parameters from Ind. Eng. Chem. Res. 2001, 40, 1244-1260.
-ethane.spc_saft_phys = sPCSAFTParms(comp=ethane,
-                                   spc_saft_spec=GS,
-                                   source="Ind. Eng. Chem. Res. 2001, 40, 1244-1260.",
-                                   seg_num=1.6069, seg_diam=3.5206, disp_energy=191.42)
+# ethane.spc_saft_phys = sPCSAFTParms(comp=ethane,
+#                                    spc_saft_spec=GS,
+#                                    source="Ind. Eng. Chem. Res. 2001, 40, 1244-1260.",
+#                                    seg_num=1.6069, seg_diam=3.5206, disp_energy=191.42)
 
 # Information from DIPPR tables presented in Perry's Chemical Engineer's Handbook, 9th ed.
 propane = Comp('Propane')
@@ -49,10 +49,10 @@ propane.pc = 4248000.0
 propane.vc = 0.0002
 propane.acentric = 0.152291
 
-propane.spc_saft_phys = sPCSAFTParms(comp=propane,
-                                    spc_saft_spec=GS,
-                                    source="Ind. Eng. Chem. Res. 2001, 40, 1244-1260.",
-                                    seg_num=2.002, seg_diam=3.6184, disp_energy=208.11)
+# propane.spc_saft_phys = sPCSAFTParms(comp=propane,
+#                                     spc_saft_spec=GS,
+#                                     source="Ind. Eng. Chem. Res. 2001, 40, 1244-1260.",
+#                                     seg_num=2.002, seg_diam=3.6184, disp_energy=208.11)
 
 # Information from DIPPR tables presented in Perry's Chemical Engineer's Handbook, 9th ed.
 nitrogen = Comp('Nitrogen')
@@ -65,20 +65,17 @@ nitrogen.pc = 3400000.0
 nitrogen.vc = 0.00008921
 nitrogen.acentric = 0.0377215
 
-nitrogen.spc_saft_phys = sPCSAFTParms(comp=nitrogen,
-                                     spc_saft_spec=GS,
-                                     source="Ind. Eng. Chem. Res. 2001, 40, 1244-1260.",
-                                     seg_num=1.2053, seg_diam=3.3130, disp_energy=90.96)
+# nitrogen.spc_saft_phys = sPCSAFTParms(comp=nitrogen,
+#                                      spc_saft_spec=GS,
+#                                      source="Ind. Eng. Chem. Res. 2001, 40, 1244-1260.",
+#                                      seg_num=1.2053, seg_diam=3.3130, disp_energy=90.96)
 
-# TODO: Break out constants for compounds into their own module.  Put all components into one Comps module.
-# TODO: Break out binary interactions into one big module for all binary interactions.
+
 # Information from DIPPR tables presented in Perry's Chemical Engineer's Handbook, 9th ed.
 water = Comp('Water')
 water.formula = "H2O"
 water.family = "inorganic"
 water.cas_no = "7732-18-5"
-# TODO: mw: typing.Optional[float]
-# TODO: mw: Optional[float] = None
 water.mw = 18.01528
 water.tc = 647.096
 water.pc = 22064000.0
@@ -125,7 +122,7 @@ water.cp_ig = Corel(a=0.33363 * 10 ** 5.0,
                     source=refs.dippr,
                     notes="DIPPR correlation parameters taken from Perry's Chemical Engineers' Handbook, 9th")
 
-water.spc_saft_phys = sPCSAFTParms(comp=water,
-                                  spc_saft_spec=GS,
-                                  source="Ind. Eng. Chem. Res. 2014, 53, 14493−14507.",
-                                  seg_num=2.0, seg_diam=2.3449, disp_energy=171.67)
+# water.spc_saft_phys = sPCSAFTParms(comp=water,
+#                                   spc_saft_spec=GS,
+#                                   source="Ind. Eng. Chem. Res. 2014, 53, 14493−14507.",
+#                                   seg_num=2.0, seg_diam=2.3449, disp_energy=171.67)

@@ -50,10 +50,10 @@ if __name__ == "__main__":
     methanol.vc = 0.000117
     methanol.acentric = 0.565831
 
-    methanol.spc_saft_phys = sPCSAFTParms(comp=methanol,
-                                         spc_saft_spec=GS,
-                                         source="Ind. Eng. Chem. Res. 2012, 45, 14903–14914.",
-                                         seg_num=1.88238, seg_diam=3.0023, disp_energy=181.77)
+    # methanol.spc_saft_phys = sPCSAFTParms(comp=methanol,
+    #                                      spc_saft_spec=GS,
+    #                                      source="Ind. Eng. Chem. Res. 2012, 45, 14903–14914.",
+    #                                      seg_num=1.88238, seg_diam=3.0023, disp_energy=181.77)
 
     # Define association sites corresponding to methanol as a 2B molecule.
     ea1 = AssocSite(comp=methanol, site='H1', type='ea')
