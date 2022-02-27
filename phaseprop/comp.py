@@ -199,9 +199,9 @@ class Comp(object):
     spc_saft_phys = typing.Optional[spc_saft.sPCSAFTParms] = None
 
     # SAFT EOS association parameter objects.
-    assoc_sites = typing.Optional[list] = None
-    cpa_assoc = typing.Optional[list] = None
-    spc_saft_assoc = typing.Optional[list] = None
+    assoc_sites = typing.Optional[assoc.AssocSiteSet] = None
+    cpa_assoc = typing.Optional[assoc.AssocSiteInterSet] = None
+    spc_saft_assoc = typing.Optional[assoc.AssocSiteInterSet] = None
 
     def __post_init__(self):
         if self.family not in FAMILY:
