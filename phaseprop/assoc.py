@@ -1,7 +1,9 @@
 """Objects representing association sites and interactions."""
 
-from comp import Comp
-from eos import EOS
+import numpy as np
+import dataclasses
+import comp
+import eos
 
 # Pre-defined equation of state (EOS) pick lists.
 ASSOC_EOS = ['CPA', 'PC-SAFT', 'sPC-SAFT']
@@ -27,7 +29,7 @@ class AssocSite(object):
         try:
             self._comp
         except AttributeError:
-            if isinstance(value, Comp):
+            if isinstance(value, comp.Comp):
                 self._comp = value
             else:
                 raise TypeError("Component must be an instance of Comp.")
@@ -90,6 +92,29 @@ class AssocSite(object):
             else:
                 return False
         return False
+
+
+@dataclasses.dataclass
+class AssocSiteSet(object):
+    """Set of Association sites related to an individual component.
+
+    Attributes
+    ----------
+    assoc_sites : list of AssocSite
+        List of AssocSites that are a part of the AssocSiteSet instance.
+    size : int
+        The number of Comp or PseudoComp objects in 'assoc_sites'.
+    """
+    assoc_sites: list[AssocSite]
+
+    def __post_init__(self):
+        if len(self.assoc_sites) != len(set(self.assoc_sites)):
+            raise ValueError("Comp objects must be a list of unique assoc_site objects.")
+
+    @property
+    def size(self):
+        """int : The number of AssocSite objects in 'assoc_sites'."""
+        return len(self.assoc_sites)
 
 
 class AssocSiteInter(object):
@@ -231,7 +256,7 @@ class AssocInter(object):
         try:
             self._comps
         except AttributeError:
-            if isinstance(value, CompSet):
+            if isinstance(value, comp.CompSet):
                 self._comps = value
             else:
                 raise TypeError("comps must be an instance of CompSet.")
@@ -382,8 +407,6 @@ class AssocInter(object):
                     self.load_site_inter(comp.cpa_assoc)
                 elif self._eos == 'sPC-SAFT':
                     self.load_site_inter(comp.spc_saft_assoc)
-                elif self._eos == 'PC-SAFT':
-                    self.load_site_inter(comp.pc_saft_assoc)
                 else:
                     raise ValueError("eos not valid.")
 
@@ -467,7 +490,7 @@ class AssocInter(object):
         return hash((self.comps, self.assoc_energy(), self.assoc_vol()))
 
 
-class Assoc(EOS):
+class Assoc(eos.EOS):
     """Base class implementation of a general associating term (EOS).
 
     Notes

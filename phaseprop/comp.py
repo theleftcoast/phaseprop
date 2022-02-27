@@ -380,7 +380,7 @@ class CompSet(object):
         The number of Comp or PseudoComp objects in 'comps'.
     can_associate : list of bool
         Indicator of if Comp or PseudoComp objects in 'comps' can associate.
-    mw :
+    mw : list of float or None
         Molecular weight for each Comp or PseudoComp objects in 'comps' (returns None if any are missing 'mw').
     """
     comps: typing.Union[list[Comp], list[PseudoComp]]
@@ -388,13 +388,13 @@ class CompSet(object):
     @property
     def size(self):
         """int : The number of Comp or PseudoComp objects in 'comps'."""
-        return len(self._comps)
+        return len(self.comps)
 
     @property
     def can_associate(self):
         """list of bool : Boolean indicating if Comp or PseudoComp objects in 'comps' can associate."""
         result = []
-        for comp in self._comps:
+        for comp in self.comps:
             if comp.assoc_sites is not None:
                 result.append(True)
             else:
@@ -407,7 +407,7 @@ class CompSet(object):
 
         Returns None if any Comp or PseudoComp object is missing molecular weight."""
         result = []
-        for comp in self._comps:
+        for comp in self.comps:
             if comp.mw is None:
                 return None
             else:
