@@ -1,7 +1,8 @@
-"""Objects representing association sites and interactions."""
+"""Objects representing association sites and association interactions."""
 
 import numpy as np
 import dataclasses
+import typing
 import comp
 import eos
 
@@ -96,20 +97,20 @@ class AssocSite(object):
 
 @dataclasses.dataclass
 class AssocSiteSet(object):
-    """Set of Association sites related to an individual component.
+    """Set of AssocSite objects related to an individual component.
 
     Attributes
     ----------
     assoc_sites : list of AssocSite
-        List of AssocSites that are a part of the AssocSiteSet instance.
+        List of AssocSite objects that are a part of the AssocSiteSet instance.
     size : int
-        The number of Comp or PseudoComp objects in 'assoc_sites'.
+        The number of AssocSite objects in 'assoc_sites'.
     """
     assoc_sites: list[AssocSite]
 
     def __post_init__(self):
         if len(self.assoc_sites) != len(set(self.assoc_sites)):
-            raise ValueError("Comp objects must be a list of unique assoc_site objects.")
+            raise ValueError("AssocSite must be a list of unique assoc_site objects.")
 
     @property
     def size(self):
@@ -117,121 +118,50 @@ class AssocSiteSet(object):
         return len(self.assoc_sites)
 
 
+@dataclasses.dataclass
 class AssocSiteInter(object):
-    """Interaction between two association sites."""
-    def __init__(self, site_a=None, site_b=None, eos=None, source=None,
-                 assoc_energy=None, assoc_vol=None):
-        if site_a is None or site_b is None or eos is None:
-            raise ValueError("site_a, site_b, and eos must be provided to create an instance of AssocSite.")
-        elif not isinstance(site_a, AssocSite) or not isinstance(site_b, AssocSite):
-            raise ValueError("Association sites must be an instance of AssocSite.")
-        elif not site_a.can_interact(site_b):
-            raise ValueError("Association sites must be able to interact.")
-        else:
-            self.site_a = site_a
-            self.site_b = site_b
-            self.eos = eos
-            self.source = source
-            self.assoc_energy = assoc_energy
-            self.assoc_vol = assoc_vol
+    """Interaction between two association sites.
+
+    Attributes
+    ----------
+    site_a : AssocSite
+        AssocSite participating in the interaction.
+    site_b : AssocSite
+        AssocSite participating in the interaction.
+    assoc_energy : float
+        Association energy between sites.
+    assoc_vol : float
+        Association volume between sites.
+    source : str, optional
+        Source for the association interaction parameters (ACS citation format preferred).
+    notes : str, optional
+        Notes associated with the correlation.
+    """
+    site_a: AssocSite
+    site_b: AssocSite
+    assoc_energy: float
+    assoc_vol: float
+    source: typing.Optional[str] = None
+    notes: typing.Optional[str] = None
+
+
+@dataclasses.dataclass
+class AssocSiteInterSet(object):
+    """Set of AssocSiteInter objects related to an individual component.
+
+    Attributes
+    ----------
+    assoc_site_inters : list of AssocSiteInter
+        List of AssocSiteInter objects that are part of the AssocSiteSet instance.
+    size : int
+        The number of AssocSiteInter objects in 'assoc_sites'.
+    """
+    assoc_site_inters: list[AssocSiteInter]
 
     @property
-    def site_a(self):
-        return self._site_a
-
-    @site_a.setter
-    def site_a(self, value):
-        try:
-            self._site_a
-        except AttributeError:
-            self._site_a = value
-
-    @property
-    def site_b(self):
-        return self._site_b
-
-    @site_b.setter
-    def site_b(self, value):
-        try:
-            self._site_b
-        except AttributeError:
-            self._site_b = value
-
-    @property
-    def eos(self):
-        return self._eos
-
-    @eos.setter
-    def eos(self, value):
-        try:
-            self._eos
-        except AttributeError:
-            # TODO: Convert to checking for instance of CPA or sPC-SAFT.
-            if value in ASSOC_EOS:
-                self._eos = value
-            else:
-                raise ValueError("eos is not valid.")
-
-    @property
-    def source(self):
-        return self._source
-
-    @source.setter
-    def source(self, value):
-        if value is None:
-            self._source = value
-        elif isinstance(value, str):
-            self._source = value
-        else:
-            raise ValueError("source must be a string.")
-
-    @property
-    def assoc_energy(self):
-        return self._assoc_energy
-
-    @assoc_energy.setter
-    def assoc_energy(self, value):
-        if value is None:
-            self._assoc_energy = value
-        elif isinstance(value, float) and value >= 0.0:
-            self._assoc_energy = value
-        else:
-            raise ValueError("assoc_energy must be a positive float.")
-
-    @property
-    def assoc_vol(self):
-        return self._assoc_vol
-
-    @assoc_vol.setter
-    def assoc_vol(self, value):
-        if value is None:
-            self._assoc_vol = value
-        elif isinstance(value, float) and value >= 0.0:
-            self._assoc_vol = value
-        else:
-            raise ValueError("assoc_vol must be a positive float.")
-
-    def __eq__(self, other):
-        if isinstance(other, AssocSiteInter):
-            aa_bb_eq = self.site_a == other.site_a and self.site_b == other.site_b
-            ab_ba_eq = self.site_a == other.site_b and self.site_b == other.site_a
-            eos_eq = self.eos == other.eos
-            return (aa_bb_eq or ab_ba_eq) and eos_eq
-        return False
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def __hash__(self):
-        return hash((hash(self.site_a), hash(self.site_b), self.eos))
-
-    def __str__(self):
-        return "Site A: ({}), Site B: ({}), EOS: {}, Source: {}, Volume: {}, Energy: {}".format(self.site_a,
-                                                                                                self.site_b,
-                                                                                                self.eos,
-                                                                                                self.source,
-                                                                                                self.assoc_vol,
-                                                                                                self.assoc_energy)
+    def size(self):
+        """int : The number of AssocSite objects in 'assoc_sites'."""
+        return len(self.assoc_site_inters)
 
 
 class AssocInter(object):

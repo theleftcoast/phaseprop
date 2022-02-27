@@ -338,17 +338,6 @@ class Comp(object):
         """
         return
 
-    # TODO: Improve interface by making these checks part of getter/setter methods?
-    def _check_assoc_sites(self):
-        # Check to ensure there are no duplicate association sites.
-        if self.assoc_sites is not None:
-            if not isinstance(self.assoc_sites, (list, tuple)):
-                raise TypeError("Comp objects must be a list of unique assoc_site objects.")
-            elif len(self.assoc_sites) != len(set(self.assoc_sites)):
-                raise ValueError("Comp objects must be a list of unique assoc_site objects.")
-            else:
-                pass
-
     def _check_assoc_parameters(self):
         # Check to ensure association parameter are lists of AssocSiteInter objects.
         if self.assoc_sites is not None:
