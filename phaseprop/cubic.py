@@ -244,7 +244,7 @@ class TwuAlpha(object):
 
 @dataclasses.dataclass
 class SRKParms(object):
-    """Soave's Redlich-Kwong equation of state parameters for a single component.
+    """SRK equation of state parameters for a single component.
 
     Parameters
     ----------
@@ -273,7 +273,7 @@ class SRKParms(object):
 
 @dataclasses.dataclass
 class CPAParms(object):
-    """Cubic Plus Association equation of state parameters for a single component.
+    """CPA equation of state parameters for a single component.
 
     Parameters
     ----------

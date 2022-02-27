@@ -2,7 +2,6 @@
 
 import refs
 from comp import Comp
-from utility import Corel
 from spc_saft import GS, sPCSAFTParms
 
 # Information from DIPPR tables presented in Perry's Chemical Engineer's Handbook, 9th ed.
@@ -82,45 +81,45 @@ water.pc = 22064000.0
 water.vc = 0.0000559472
 water.acentric = 0.344861
 
-water.pvap = Corel(a=73.649,
-                   b=-7258.2,
-                   c=-7.3037,
-                   d=4.1653 * 10 ** -6,
-                   e=2.0,
-                   eq_id=1,
-                   source_t_min=273.16,
-                   source_t_max=647.1,
-                   source_t_unit='K',
-                   source_unit='Pa',
-                   source=refs.dippr,
-                   notes="DIPPR correlation parameters taken from Perry's Chemical Engineers' Handbook, 9th")
-
-water.hvap = Corel(a=5.66 * 10 ** 7,
-                   b=0.612041,
-                   c=-0.625697,
-                   d=0.398804,
-                   e=0.0,
-                   f=647.096,
-                   eq_id=4,
-                   source_t_min=273.16,
-                   source_t_max=647.096,
-                   source_t_unit='K',
-                   source_unit='J/kmol',
-                   source=refs.dippr,
-                   notes="DIPPR correlation parameters taken from Perry's Chemical Engineers' Handbook, 9th")
-
-water.cp_ig = Corel(a=0.33363 * 10 ** 5.0,
-                    b=0.26790 * 10 ** 5.0,
-                    c=2.61050 * 10 ** 3.0,
-                    d=0.08896 * 10 ** 5.0,
-                    e=1169.0,
-                    eq_id=7,
-                    source_t_min=100.0,
-                    source_t_max=2273.15,
-                    source_t_unit='K',
-                    source_unit="J/kmol.K",
-                    source=refs.dippr,
-                    notes="DIPPR correlation parameters taken from Perry's Chemical Engineers' Handbook, 9th")
+# water.pvap = Corel(a=73.649,
+#                    b=-7258.2,
+#                    c=-7.3037,
+#                    d=4.1653 * 10 ** -6,
+#                    e=2.0,
+#                    eq_id=1,
+#                    source_t_min=273.16,
+#                    source_t_max=647.1,
+#                    source_t_unit='K',
+#                    source_unit='Pa',
+#                    source=refs.dippr,
+#                    notes="DIPPR correlation parameters taken from Perry's Chemical Engineers' Handbook, 9th")
+#
+# water.hvap = Corel(a=5.66 * 10 ** 7,
+#                    b=0.612041,
+#                    c=-0.625697,
+#                    d=0.398804,
+#                    e=0.0,
+#                    f=647.096,
+#                    eq_id=4,
+#                    source_t_min=273.16,
+#                    source_t_max=647.096,
+#                    source_t_unit='K',
+#                    source_unit='J/kmol',
+#                    source=refs.dippr,
+#                    notes="DIPPR correlation parameters taken from Perry's Chemical Engineers' Handbook, 9th")
+#
+# water.cp_ig = Corel(a=0.33363 * 10 ** 5.0,
+#                     b=0.26790 * 10 ** 5.0,
+#                     c=2.61050 * 10 ** 3.0,
+#                     d=0.08896 * 10 ** 5.0,
+#                     e=1169.0,
+#                     eq_id=7,
+#                     source_t_min=100.0,
+#                     source_t_max=2273.15,
+#                     source_t_unit='K',
+#                     source_unit="J/kmol.K",
+#                     source=refs.dippr,
+#                     notes="DIPPR correlation parameters taken from Perry's Chemical Engineers' Handbook, 9th")
 
 # water.spc_saft_phys = sPCSAFTParms(comp=water,
 #                                   spc_saft_spec=GS,
