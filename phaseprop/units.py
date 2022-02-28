@@ -42,6 +42,9 @@ SURFACE_TENSION : dict
 UNITS : dict
     Combination of all unit conversion dictionaries.  Keys are units and values are the conversion factor for that
     unit into the corresponding SI unit.
+SI_UNITS : dict
+    Keys are the SI unit for the dictionaries stored as values.
+
 
 Notes
 -----
@@ -134,7 +137,7 @@ HEAT_CAPACITY = {'J/kmol.K': 0.0001,
 
 VISCOSITY = {'Pa.s': 1.0}
 
-THERMAL_CONDUCTIVITY = {'W/(m.K)': 1.0}
+THERMAL_CONDUCTIVITY = {'W/m.K': 1.0}
 
 SURFACE_TENSION = {'mN/m': 0.001,
                    'dyne/cm': 0.001,
@@ -142,6 +145,7 @@ SURFACE_TENSION = {'mN/m': 0.001,
 
 # Temperature is left out of this list because conversion is more than just multiplication by a constant.
 UNITS = {**MOLECULAR_WEIGHT,
+         **AMOUNT,
          **MASS,
          **LENGTH,
          **AREA,
@@ -150,16 +154,36 @@ UNITS = {**MOLECULAR_WEIGHT,
          **PRESSURE,
          **DENSITY,
          **MOLAR_DENSITY,
+         **MOLAR_VOLUME,
          **ENERGY,
-         **AMOUNT,
          **HEAT_OF_VAPORIZATION,
          **HEAT_CAPACITY,
          **VISCOSITY,
-         **THERMAL_CONDUCTIVITY}
+         **THERMAL_CONDUCTIVITY,
+         **SURFACE_TENSION}
+
+SI_UNITS = {'g/mol': MOLECULAR_WEIGHT,
+            'mol': AMOUNT,
+            'kg': MASS,
+            'm': LENGTH,
+            'm2': AREA,
+            'm3': VOLUME,
+            'N': FORCE,
+            'Pa': PRESSURE,
+            'K': TEMPERATURE,
+            'kg/m3': DENSITY,
+            'mol/m3': MOLAR_DENSITY,
+            'm3/mol': MOLAR_VOLUME,
+            'J': ENERGY,
+            'J/mol': HEAT_OF_VAPORIZATION,
+            'J/mol.K': HEAT_CAPACITY,
+            'Pa.s': VISCOSITY,
+            'W/m.K': THERMAL_CONDUCTIVITY,
+            'N/m': SURFACE_TENSION}
 
 
 def to_si(value: float, unit: str) -> float:
-    """Convert input to corresponding SI unit.
+    """Convert input value to corresponding SI value.
 
     Parameters
     ----------
@@ -179,3 +203,24 @@ def to_si(value: float, unit: str) -> float:
         return TEMPERATURE[unit](value)
     else:
         raise ValueError("unit is not defined.")
+
+
+def to_si_unit(unit: str) -> str:
+    """Convert input value to corresponding SI value.
+
+    Parameters
+    ----------
+    value : float
+        Input value to be converted to corresponding SI unit.
+    unit : str
+        Unit of input value.
+
+    Returns
+    -------
+    float
+        Value converted to corresponding SI unit.
+    """
+    for si_unit, unit_dict in SI_UNITS.items():
+        if unit in unit_dict:
+            return si_unit
+    raise ValueError("unit is not defined.")

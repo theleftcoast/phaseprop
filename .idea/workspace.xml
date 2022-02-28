@@ -2,9 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="511a55b2-cf5c-4406-bae2-35cd7fb8ea96" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/phaseprop/assoc.py" beforeDir="false" afterPath="$PROJECT_DIR$/phaseprop/assoc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/phaseprop/comp.py" beforeDir="false" afterPath="$PROJECT_DIR$/phaseprop/comp.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/phaseprop/pure_comp_parm.py" beforeDir="false" afterPath="$PROJECT_DIR$/phaseprop/pure_comp_parm.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/phaseprop/units.py" beforeDir="false" afterPath="$PROJECT_DIR$/phaseprop/units.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -36,10 +35,32 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/phaseprop/utility.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1105">
+              <caret line="223" column="71" lean-forward="true" selection-start-line="223" selection-start-column="57" selection-end-line="223" selection-end-column="71" />
+              <folding>
+                <element signature="e#24#42#0" expanded="true" />
+                <element signature="e#117#1465#0" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/phaseprop/units.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1122">
+              <caret line="222" column="10" selection-start-line="222" selection-start-column="10" selection-end-line="222" selection-end-column="10" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/phaseprop/pure_comp_parm.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="374">
-              <caret line="22" selection-start-line="22" selection-start-column="2" selection-end-line="29" selection-end-column="30" />
+            <state relative-caret-position="527">
+              <caret line="31" lean-forward="true" selection-start-line="31" selection-end-line="31" />
               <folding>
                 <element signature="e#34#58#0" expanded="true" />
               </folding>
@@ -48,46 +69,10 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/phaseprop/utility.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="238">
-              <caret line="134" selection-start-line="134" selection-end-line="137" selection-end-column="46" />
-              <folding>
-                <element signature="e#24#42#0" expanded="true" />
-                <element signature="e#117#1465#0" />
-                <element signature="e#24449#25242#0" />
-                <element signature="e#30065#34865#0" />
-                <element signature="e#34920#39634#0" />
-                <element signature="e#39689#44848#0" />
-                <element signature="e#44901#49358#0" />
-                <element signature="e#49412#54007#0" />
-                <element signature="e#54061#59313#0" />
-                <element signature="e#59369#65430#0" />
-                <element signature="e#65488#70148#0" />
-                <element signature="e#70207#75042#0" />
-                <element signature="e#75098#79536#0" />
-                <element signature="e#79596#84405#0" />
-                <element signature="e#84462#88780#0" />
-                <element signature="e#88837#92885#0" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/phaseprop/units.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="510">
-              <caret line="30" column="27" lean-forward="true" selection-start-line="30" selection-end-line="30" selection-end-column="27" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/phaseprop/comp.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="3434">
-              <caret line="340" selection-start-line="340" selection-end-line="340" />
+            <state relative-caret-position="1700">
+              <caret line="203" column="60" selection-start-line="203" selection-start-column="60" selection-end-line="203" selection-end-column="60" />
               <folding>
                 <element signature="e#561#579#0" expanded="true" />
                 <element signature="e#638#1219#0" />
@@ -97,16 +82,17 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/phaseprop/assoc.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="578">
-              <caret line="158" column="43" lean-forward="true" selection-start-line="158" selection-start-column="43" selection-end-line="158" selection-end-column="43" />
+            <state relative-caret-position="408">
+              <caret line="148" column="32" selection-start-line="148" selection-start-column="32" selection-end-line="148" selection-end-column="32" />
               <folding>
                 <element signature="e#64#76#0" expanded="true" />
                 <element signature="e#231#2657#0" />
                 <element signature="e#2730#3386#0" />
                 <element signature="e#3474#3690#0" />
+                <element signature="e#4265#4914#0" />
                 <element signature="e#6663#17421#0" />
                 <element signature="e#17446#19425#0" />
               </folding>
@@ -157,8 +143,6 @@
         <option value="$PROJECT_DIR$/phaseprop/system.py" />
         <option value="$PROJECT_DIR$/phaseprop/eos.py" />
         <option value="$PROJECT_DIR$/phaseprop/unit.py" />
-        <option value="$PROJECT_DIR$/phaseprop/units.py" />
-        <option value="$PROJECT_DIR$/phaseprop/pure_comp_parm.py" />
         <option value="$PROJECT_DIR$/phaseprop/refs.py" />
         <option value="$PROJECT_DIR$/phaseprop/cpa.py" />
         <option value="$PROJECT_DIR$/phaseprop/spc_saft.py" />
@@ -166,8 +150,10 @@
         <option value="$PROJECT_DIR$/phaseprop/pure_comp_parms.py" />
         <option value="$PROJECT_DIR$/phaseprop/main.py" />
         <option value="$PROJECT_DIR$/phaseprop/cubic.py" />
-        <option value="$PROJECT_DIR$/phaseprop/comp.py" />
         <option value="$PROJECT_DIR$/phaseprop/assoc.py" />
+        <option value="$PROJECT_DIR$/phaseprop/comp.py" />
+        <option value="$PROJECT_DIR$/phaseprop/pure_comp_parm.py" />
+        <option value="$PROJECT_DIR$/phaseprop/units.py" />
       </list>
     </option>
   </component>
@@ -345,7 +331,21 @@
       <option name="project" value="LOCAL" />
       <updated>1646002195085</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="Implemented AssocSiteInterSet as an object to store association site interactions for an individual component.  Also reworked AssocSiteInter implementation to be a dataclass.">
+      <created>1646004043094</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1646004043094</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Updated Comp to use new assoc objects.">
+      <created>1646004295336</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1646004295336</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -421,7 +421,9 @@
     <MESSAGE value="Implemented additional cleaned up sPCSAFTParms implementation." />
     <MESSAGE value="Reimplemented Comp and CompSet as dataclasses." />
     <MESSAGE value="Implemented AssocSiteSet as an object to store association sites for an individual component." />
-    <option name="LAST_COMMIT_MESSAGE" value="Implemented AssocSiteSet as an object to store association sites for an individual component." />
+    <MESSAGE value="Implemented AssocSiteInterSet as an object to store association site interactions for an individual component.  Also reworked AssocSiteInter implementation to be a dataclass." />
+    <MESSAGE value="Updated Comp to use new assoc objects." />
+    <option name="LAST_COMMIT_MESSAGE" value="Updated Comp to use new assoc objects." />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/phaseprop/const.py">
@@ -454,16 +456,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/phaseprop/pure_comp_parm.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="374">
-          <caret line="22" selection-start-line="22" selection-start-column="2" selection-end-line="29" selection-end-column="30" />
-          <folding>
-            <element signature="e#34#58#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/phaseprop/eos.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-1632">
@@ -478,13 +470,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="204">
           <caret line="12" lean-forward="true" selection-start-line="12" selection-end-line="12" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/phaseprop/units.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="510">
-          <caret line="30" column="27" lean-forward="true" selection-start-line="30" selection-end-line="30" selection-end-column="27" />
         </state>
       </provider>
     </entry>
@@ -536,35 +521,26 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/phaseprop/utility.py">
+    <entry file="file://$PROJECT_DIR$/phaseprop/assoc.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="134" selection-start-line="134" selection-end-line="137" selection-end-column="46" />
+        <state relative-caret-position="408">
+          <caret line="148" column="32" selection-start-line="148" selection-start-column="32" selection-end-line="148" selection-end-column="32" />
           <folding>
-            <element signature="e#24#42#0" expanded="true" />
-            <element signature="e#117#1465#0" />
-            <element signature="e#24449#25242#0" />
-            <element signature="e#30065#34865#0" />
-            <element signature="e#34920#39634#0" />
-            <element signature="e#39689#44848#0" />
-            <element signature="e#44901#49358#0" />
-            <element signature="e#49412#54007#0" />
-            <element signature="e#54061#59313#0" />
-            <element signature="e#59369#65430#0" />
-            <element signature="e#65488#70148#0" />
-            <element signature="e#70207#75042#0" />
-            <element signature="e#75098#79536#0" />
-            <element signature="e#79596#84405#0" />
-            <element signature="e#84462#88780#0" />
-            <element signature="e#88837#92885#0" />
+            <element signature="e#64#76#0" expanded="true" />
+            <element signature="e#231#2657#0" />
+            <element signature="e#2730#3386#0" />
+            <element signature="e#3474#3690#0" />
+            <element signature="e#4265#4914#0" />
+            <element signature="e#6663#17421#0" />
+            <element signature="e#17446#19425#0" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/phaseprop/comp.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3434">
-          <caret line="340" selection-start-line="340" selection-end-line="340" />
+        <state relative-caret-position="1700">
+          <caret line="203" column="60" selection-start-line="203" selection-start-column="60" selection-end-line="203" selection-end-column="60" />
           <folding>
             <element signature="e#561#579#0" expanded="true" />
             <element signature="e#638#1219#0" />
@@ -573,18 +549,31 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/phaseprop/assoc.py">
+    <entry file="file://$PROJECT_DIR$/phaseprop/pure_comp_parm.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="578">
-          <caret line="158" column="43" lean-forward="true" selection-start-line="158" selection-start-column="43" selection-end-line="158" selection-end-column="43" />
+        <state relative-caret-position="527">
+          <caret line="31" lean-forward="true" selection-start-line="31" selection-end-line="31" />
           <folding>
-            <element signature="e#64#76#0" expanded="true" />
-            <element signature="e#231#2657#0" />
-            <element signature="e#2730#3386#0" />
-            <element signature="e#3474#3690#0" />
-            <element signature="e#6663#17421#0" />
-            <element signature="e#17446#19425#0" />
+            <element signature="e#34#58#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/phaseprop/utility.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1105">
+          <caret line="223" column="71" lean-forward="true" selection-start-line="223" selection-start-column="57" selection-end-line="223" selection-end-column="71" />
+          <folding>
+            <element signature="e#24#42#0" expanded="true" />
+            <element signature="e#117#1465#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/phaseprop/units.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1122">
+          <caret line="222" column="10" selection-start-line="222" selection-start-column="10" selection-end-line="222" selection-end-column="10" />
         </state>
       </provider>
     </entry>

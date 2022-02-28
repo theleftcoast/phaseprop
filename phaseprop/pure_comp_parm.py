@@ -1,23 +1,23 @@
 """Pure component parameters."""
 
-from comp import CompAlt
+from comp import Comp
 import refs
 from utility import Const
 
 
-methane = CompAlt(name='Methane',
-                  cas_no='74-82-8',
-                  formula='CH4',
-                  family='alkane',
-                  mw=Const(value=16.0425,
-                           unit='g/mol',
-                           source=refs.dippr),
-                  tc=Const(value=190.564,
-                           unit='K',
-                           source=refs.dippr),
-                  pc=Const(value=4599000.0,
-                           unit='Pa',
-                           source=refs.dippr))
+methane = Comp(name='Methane',
+               cas_no='74-82-8',
+               formula='CH4',
+               family='alkane',
+               mw=Const(value=16.0425,
+                        unit='g/mol',
+                        source=refs.dippr),
+               tc=Const(value=190.564,
+                        unit='K',
+                        source=refs.dippr),
+               pc=Const(value=4599000.0,
+                        unit='Pa',
+                        source=refs.dippr))
 
 
 # methane.formula = "CH4"
