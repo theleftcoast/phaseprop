@@ -79,7 +79,7 @@ class Const(float):
                  uncertainty: typing.Optional[float] = None,
                  source: typing.Optional[str] = None,
                  notes: typing.Optional[str] = None):
-        super().__init__(value)
+        float.__init__(value)
         self.unit = unit
         self.uncertainty = uncertainty
         self.source = source
@@ -93,6 +93,9 @@ class Const(float):
     @unit.setter
     def unit(self, value):
         if value in units.UNITS:
+            self._unit = value
+            return
+        elif value in units.TEMPERATURE:
             self._unit = value
             return
         elif value is None:
@@ -480,7 +483,7 @@ class PerryHvap(object):
     d : float, default: 0.0
         Correlation parameter.
     e : float, default: 0.0
-        Correlation parameter.
+        Critical temperature.
     unit : str, default: 'J/mol'
         Output unit for correlation when evaluated with parameters a-e.
     t_unit : float, default: 'K'
@@ -570,8 +573,7 @@ class PerryHvap(object):
         """DIPPR enthalpy of vaporization."""
         return self.a * (1.0 - self._tr(t)) ** (self.b +
                                                 self.c * self._tr(t) +
-                                                self.d * self._tr(t)**2.0 +
-                                                self.e * self._tr(t)**3.0)
+                                                self.d * self._tr(t)**2.0)
 
     def __call__(self, t: float) -> float:
         """Evaluate enthalpy of vaporization.
@@ -1482,11 +1484,11 @@ class KineticTcondIg(object):
     t_max : float, optional
         Maximum temperature (in 'K').
     rmse : float, optional
-        Root mean squared error (in 'W/(m.K)').
+        Root mean squared error (in 'W/m.K').
     mae : float, optional
-        Mean absolute error (in 'W/(m.K)')
+        Mean absolute error (in 'W/m.K')
     mape : float, optional
-        Mean absolute percentage error (in 'W/(m.K)').
+        Mean absolute percentage error (in 'W/m.K').
     source : str, optional
         Source for the correlation (ACS citation format preferred).
     notes : str, optional
@@ -1534,7 +1536,7 @@ class KineticTcondIg(object):
     b: float = 0.0
     c: float = 0.0
     d: float = 0.0
-    unit: str = 'W/(m.K)'
+    unit: str = 'W/m.K'
     t_unit: str = 'K'
     t_min: typing.Optional[float] = None
     t_max: typing.Optional[float] = None
@@ -1567,7 +1569,7 @@ class KineticTcondIg(object):
         Returns
         -------
         float
-            Saturated liquid viscosity evaluated at 't' (in 'W/(m.K)').
+            Saturated liquid viscosity evaluated at 't' (in 'W/m.K').
         """
         return units.to_si(self._corel(self._t_conv(t)), unit=self.unit)
 
@@ -1586,7 +1588,7 @@ class PolyTcondIg(object):
         Correlation parameter.
     d : float, default: 0.0
         Correlation parameter.
-    unit : str, default: 'W/(m.K)'
+    unit : str, default: 'W/m.K'
         Output unit for correlation when evaluated with parameters a-e.
     t_unit : float, default: 'K'
         Input unit for correlation for evaluation with parameters a-e.
@@ -1595,11 +1597,11 @@ class PolyTcondIg(object):
     t_max : float, optional
         Maximum temperature (in 'K').
     rmse : float, optional
-        Root mean squared error (in 'W/(m.K)').
+        Root mean squared error (in 'W/m.K').
     mae : float, optional
-        Mean absolute error (in 'W/(m.K)')
+        Mean absolute error (in 'W/m.K')
     mape : float, optional
-        Mean absolute percentage error (in 'W/(m.K)').
+        Mean absolute percentage error (in 'W/m.K').
     source : str, optional
         Source for the correlation (ACS citation format preferred).
     notes : str, optional
@@ -1642,7 +1644,7 @@ class PolyTcondIg(object):
     b: float = 0.0
     c: float = 0.0
     d: float = 0.0
-    unit: str = 'W/(m.K)'
+    unit: str = 'W/m.K'
     t_unit: str = 'K'
     t_min: typing.Optional[float] = None
     t_max: typing.Optional[float] = None
@@ -1675,7 +1677,7 @@ class PolyTcondIg(object):
         Returns
         -------
         float
-            Saturated liquid viscosity evaluated at 't' (in 'W/(m.K)').
+            Saturated liquid viscosity evaluated at 't' (in 'W/m.K').
         """
         return units.to_si(self._corel(self._t_conv(t)), unit=self.unit)
 

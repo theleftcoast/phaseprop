@@ -8,10 +8,10 @@ PR : instance of CubicSpec
     Peng-Robinson equation of state functional specification.
 """
 import numpy as np
-from eos import EOS
 import dataclasses
 import typing
 import refs
+import eos
 
 
 @dataclasses.dataclass
@@ -410,7 +410,7 @@ class CubicPhysInter(object):
     """Physical interactions between components."""
 
 
-class Cubic(EOS):
+class Cubic(eos.EOS):
     """Generalized implementation of the cubic equation of state.
 
     Attributes:cubic_spec

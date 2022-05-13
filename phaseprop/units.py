@@ -39,6 +39,8 @@ THERMAL_CONDUCTIVITY : dict
     meter-Kelvin.
 SURFACE_TENSION : dict
     Keys are units for surface tension and values are the conversion factor for that unit into Newtons per meter.
+DIMENSIONLESS : dict
+    Key and value represents dimensionless quantities.
 UNITS : dict
     Combination of all unit conversion dictionaries.  Keys are units and values are the conversion factor for that
     unit into the corresponding SI unit.
@@ -112,6 +114,7 @@ FORCE = {'lbf': 4.448222,
 PRESSURE = {'psi': 6894.8,
             'atm': 101325.0,
             'mmhg': 133.32,
+            'MPa': 1000000.0,
             'Pa': 1.0}
 
 DENSITY = {'lbm/cuft': 16.01846,
@@ -121,18 +124,21 @@ DENSITY = {'lbm/cuft': 16.01846,
            'kg/m3': 1.0}
 
 MOLAR_DENSITY = {'kmol/m3': 1000.0,
+                 'mol/dm3': 1000.0,
                  'mol/m3': 1.0}
 
-MOLAR_VOLUME = {'m3/kmol': 1.0,
+MOLAR_VOLUME = {'m3/kmol': 0.001,
                 'm3/mol': 1.0}
 
 ENERGY = {'Btu': 1054.4,
           'J': 1.0}
 
 HEAT_OF_VAPORIZATION = {'J/kmol': 0.001,
+                        'cal/mol': 4.184,
+                        'kcal/mol': 4184.0,
                         'J/mol': 1.0}
 
-HEAT_CAPACITY = {'J/kmol.K': 0.0001,
+HEAT_CAPACITY = {'J/kmol.K': 0.001,
                  'J/mol.K': 1.0}
 
 VISCOSITY = {'Pa.s': 1.0}
@@ -143,7 +149,9 @@ SURFACE_TENSION = {'mN/m': 0.001,
                    'dyne/cm': 0.001,
                    'N/m': 1.0}
 
-# Temperature is left out of this list because conversion is more than just multiplication by a constant.
+DIMENSIONLESS = {'dimensionless': 1.0}
+
+# Temperature is left out of this dictionary because conversion is more than just multiplication by a constant.
 UNITS = {**MOLECULAR_WEIGHT,
          **AMOUNT,
          **MASS,
@@ -160,7 +168,8 @@ UNITS = {**MOLECULAR_WEIGHT,
          **HEAT_CAPACITY,
          **VISCOSITY,
          **THERMAL_CONDUCTIVITY,
-         **SURFACE_TENSION}
+         **SURFACE_TENSION,
+         **DIMENSIONLESS}
 
 SI_UNITS = {'g/mol': MOLECULAR_WEIGHT,
             'mol': AMOUNT,
@@ -179,7 +188,8 @@ SI_UNITS = {'g/mol': MOLECULAR_WEIGHT,
             'J/mol.K': HEAT_CAPACITY,
             'Pa.s': VISCOSITY,
             'W/m.K': THERMAL_CONDUCTIVITY,
-            'N/m': SURFACE_TENSION}
+            'N/m': SURFACE_TENSION,
+            'dimensionless': DIMENSIONLESS}
 
 
 def to_si(value: float, unit: str) -> float:
@@ -188,7 +198,7 @@ def to_si(value: float, unit: str) -> float:
     Parameters
     ----------
     value : float
-        Input value to be converted to corresponding SI unit.
+        Input value to be converted to corresponding SI value.
     unit : str
         Unit of input value.
 
@@ -210,10 +220,8 @@ def to_si_unit(unit: str) -> str:
 
     Parameters
     ----------
-    value : float
-        Input value to be converted to corresponding SI unit.
     unit : str
-        Unit of input value.
+        Input unit to be converted to corresponding SI unit
 
     Returns
     -------

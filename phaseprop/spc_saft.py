@@ -13,12 +13,13 @@ Molecules. Ind. Eng. Chem. Res. 2001, 40, 1244–1260.
 Chem. Res. 2002, 41, 5510-5515.
 """
 import numpy as np
-from const import PI, NA
-from comp import Comp, PseudoComp, CompSet
-from eos import BinaryInterParm, EOS
-from assoc import AssocInter
 import dataclasses
 import typing
+import const
+import comp
+import eos
+import binary_inter_parm
+import assoc
 
 
 class sPCSAFTSpec(object):
@@ -120,9 +121,9 @@ class sPCSAFTParms(object):
         Segment diameter.
     disp_energy : float
         Soave alpha function.
-    ck_const : float
+    polar_strength : float
+    ck_parm : float
         Chen and Kreglewski parameter (usually set to 0.12, except for hydrogen and helium).
-        # TODO: change name to not imply this is a constant...maybe ck_parm.
     source : str, optional
         Source of the parameters (ACS citation format preferred).
     notes : str, optional
@@ -131,44 +132,22 @@ class sPCSAFTParms(object):
     Notes
     -----
     Chen and Kreglewski temperature-dependent integral parameter is 0.12 for nearly all compounds. However, it can be
-    set to 0.241 for hydrogen (see eq 2-6 in de Villers' PhD thesis and eq 2-10 in Tihic's PhD thesis). This is a useful
-    correction for quantum gases (hydrogen and helium).
-
+    set to 0.241 for hydrogen (see eq 2-6 in _[1] and eq 2-10 in _[2]). This is a useful correction for quantum gases
+    (hydrogen and helium).
 
     References
     ----------
-    [1] TODO: Find de Villers' reference.
-    [2] Tihic, A.; Kontogeorgis, G.M.; von Solms, N.; Michelsen, M.L. Applications of the simplified perturbed-chain
-    SAFT equation of state using an extended parameter table. Fluid Phase Equilib. 2006, 248, 29-43.
+    [1] de Villiers, A. J. Evaluation and improvement of the sPC-SAFT equation of state for complex mixtures. PhD
+     thesis, Stellenbosch University, 2011.
+    [2] Tihic, A.; Group contribution sPC-SAFT equation of state, Ph.D. Thesis, Denmark Technical University, 2008.
     """
     seg_num: float
     seg_diam: float
     disp_energy: float
-    ck_const: float = 0.12
+    polar_strength: float
+    ck_parm: float = 0.12
     source: typing.Optional[str] = None
     notes: typing.Optional[str] = None
-
-    def init_parms(self, mw: float = 86.18, family: str = 'alkanes'):
-        """Initialize pure component parameters as a starting point for optimization routines.
-        TODO: Add other component families.
-
-        Parameters
-        ----------
-        mw : float
-            Molecular weight (in g/mol, default value corresponds to hexane).
-        family : str
-            Chemical family.
-
-        References
-        ----------
-        [1] Tihic, A.; Kontogeorgis, G.M.; von Solms, N.; Michelsen, M.L. Applications of the simplified perturbed-chain
-        SAFT equation of state using an extended parameter table. Fluid Phase Equilib. 2006, 248, 29-43.
-        """
-        if family == 'alkanes':
-            self.seg_num = 0.0249 * mw + 0.9711
-            self.seg_diam = ((1.6947 * mw + 23.27) / self._seg_num) ** 0.33333
-            self.disp_energy = (6.5446 * mw + 177.92) / self._seg_num
-            self.ck_const = 0.12
 
 
 class sPCSAFTPhysInter(object):
@@ -199,7 +178,7 @@ class sPCSAFTPhysInter(object):
         try:
             self._comps
         except AttributeError:
-            if not isinstance(value, CompSet):
+            if not isinstance(value, comp.CompSet):
                 raise TypeError("Component must be an instance of CompSet.")
             self._comps = value
 
@@ -499,14 +478,14 @@ class sPCSAFTPhysInter(object):
         result = []
         for comp_i in self._comps.comps:
             for comp_j in self._comps.comps:
-                new = BinaryInterParm(comp_i, comp_j, temp_indep_coef=0.0)
+                new = binary_inter_parm.BinaryInterParm(comp_i, comp_j, temp_indep_coef=0.0)
                 if new not in result:
                     result.append(new)
         return result
 
     def load_binary_parms(self, input):
         # Load coefficients and source from BinaryInterParm (bip) objects.
-        if isinstance(input, BinaryInterParm):
+        if isinstance(input, binary_inter_parm.BinaryInterParm):
             for _bp in self._binary_parms:
                 if input == _bp:
                     _bp.temp_indep_coef = input.temp_indep_coef
@@ -525,7 +504,7 @@ class sPCSAFTPhysInter(object):
                         _bp.source = bp.source
         elif isinstance(input, list):
             for item in input:
-                if isinstance(item, BinaryInterParm):
+                if isinstance(item, binary_inter_parm.BinaryInterParm):
                     for _bp in self._binary_parms:
                         if item == _bp:
                             _bp.temp_indep_coef = item.temp_indep_coef
@@ -571,7 +550,7 @@ class sPCSAFTPhysInter(object):
         return hash((self.comps, self.spc_saft_spec, self.seg_num, self.seg_diam, self.disp_energy, self.k_ij(298.15)))
 
 
-class sPCSAFT(EOS):
+class sPCSAFT(eos.EOS):
     """sPC-SAFT equation of state for a phase."""
 
     def __init__(self, phys_inter=None, assoc_inter=None):
@@ -604,7 +583,7 @@ class sPCSAFT(EOS):
         try:
             self._assoc_inter
         except AttributeError:
-            if isinstance(value, AssocInter) or value is None:
+            if isinstance(value, assoc.AssocInter) or value is None:
                 self._assoc_inter = value
             else:
                 raise TypeError("Must pass a AssocInter object to the constructor.")
@@ -706,14 +685,15 @@ class sPCSAFT(EOS):
         #
         # Note that eta cannot exceed ~0.74048 (closest packing of segments).  The argument 'v' has units of [m3] which
         # is converted to units of [Å**3] by multiplying by  10.0 ** 30.0.
-        return PI * NA * self._d3(t, ni) * np.sum(ni * self.phys_inter.seg_num) / (6.0 * eta * 10.0 ** 30.0)
+        return const.PI * const.NA * self._d3(t, ni) * np.sum(ni * self.phys_inter.seg_num) / (6.0 * eta * 10.0 ** 30.0)
 
     def _v_from_eta_eta(self, t, eta, ni):
         # Dimension is m**3
         #
         # Note that eta cannot exceed ~0.74048 (closest packing of segments).  The argument 'v' has units of [m3] which
         # is converted to units of [Å**3] by multiplying by  10.0 ** 30.0.
-        return - PI * NA * self._d3(t, ni) * np.sum(ni * self.phys_inter.seg_num) / (6.0 * (eta ** 2.0) * 10.0 ** 30.0)
+        return - (const.PI * const.NA * self._d3(t, ni) * np.sum(ni * self.phys_inter.seg_num) /
+                  (6.0 * (eta ** 2.0) * 10.0 ** 30.0))
 
     # This implementation of sPC-SAFT follows Appendix F in de Villers, A. J. Evaluation and improvement of the sPC-SAFT
     # equation of state for complex mixtures. PhD Thesis. Stellenbosch University. 2011.
@@ -761,7 +741,7 @@ class sPCSAFT(EOS):
         # for chemists and engineers.
         #
         #    PV = NkT -> P = kT(N/V) -> P = kTρ -> [Pa] = [J/K][K][?] -> [kg/m.s2] = [kg.m2/s2.K][K][?] -> [] = [m3][?]
-        return NA * self._n(ni) / self._v_a3(v)
+        return const.NA * self._n(ni) / self._v_a3(v)
 
     def _v_a3(self, v):
         # Dimension is Å**3.
@@ -773,7 +753,7 @@ class sPCSAFT(EOS):
     def _eta(self, t, v, ni):
         # Dimensionless.
         # de Villers (2011), Equation F-4
-        return PI * NA * self._d3(t, ni) * np.sum(ni * self.phys_inter.seg_num) / (6.0 * self._v_a3(v))
+        return const.PI * const.NA * self._d3(t, ni) * np.sum(ni * self.phys_inter.seg_num) / (6.0 * self._v_a3(v))
 
     def _eta_v(self, t, v, ni):
         # de Villers (2011), Equation F-16
@@ -788,9 +768,9 @@ class sPCSAFT(EOS):
 
     def _eta_i(self, t, v, ni):
         # de Villers (2011), Equation F-9
-        return (NA * PI / (6.0 * self._v_a3(v))) * (self._d3(t, ni) * self.phys_inter.seg_num +
-                                                    3.0 * (self._d(t, ni) ** 2.0) * self._d_i(t, ni) *
-                                                    np.sum(ni * self.phys_inter.seg_num))
+        return (const.NA * const.PI / (6.0 * self._v_a3(v))) * (self._d3(t, ni) * self.phys_inter.seg_num +
+                                                                3.0 * (self._d(t, ni) ** 2.0) * self._d_i(t, ni) *
+                                                                np.sum(ni * self.phys_inter.seg_num))
 
     def _fhs(self, t, v, ni):
         # Dimensionless.
@@ -1053,22 +1033,25 @@ class sPCSAFT(EOS):
 
     def _fdisp(self, t, v, ni):
         # de Villers, Equation F-59
-        return -(2.0 * PI * NA * (self._n(ni) ** 2.0) * self._i1(t, v, ni) * self._m2eps1sig3(t, ni) / self._v_a3(v) +
-                 PI * NA * (self._n(ni) ** 2.0) * self._c1(t, v, ni) * self._m(ni) * self._i2(t, v, ni) *
+        return -(2.0 * const.PI * const.NA * (self._n(ni) ** 2.0) * self._i1(t, v, ni) * self._m2eps1sig3(t, ni) /
+                 self._v_a3(v) +
+                 const.PI * const.NA * (self._n(ni) ** 2.0) * self._c1(t, v, ni) * self._m(ni) * self._i2(t, v, ni) *
                  self._m2eps2sig3(t, ni) / self._v_a3(v))
 
     def _fdisp1(self, t, v, ni):
         # Created for debugging purposes (allows us to test partial derivatives numerically).
-        return -(2.0 * PI * NA * (self._n(ni) ** 2.0) * self._i1(t, v, ni) * self._m2eps1sig3(t, ni) / self._v_a3(v))
+        return -(2.0 * const.PI * const.NA * (self._n(ni) ** 2.0) * self._i1(t, v, ni) * self._m2eps1sig3(t, ni) /
+                 self._v_a3(v))
 
     def _fdisp1_v(self, t, v, ni):
         # de Villers (2011), Equation F-95
         #
         # Note that the conversion factor from [m3] to [Å**3] exists here but not in de Villers. This is due to the
         # conversion in this implementation being separated into _v_a3 and application of the chain rule to _v_a3.
-        return ((10.0 ** 30.0) * 2.0 * PI * NA * (self._n(ni) ** 2.0) * self._i1(t, v, ni) * self._m2eps1sig3(t, ni) /
-                (self._v_a3(v) ** 2.0)) - \
-               (2.0 * PI * NA * (self._n(ni) ** 2.0) * self._m2eps1sig3(t, ni) * self._i1_v(t, v, ni) / self._v_a3(v))
+        return ((10.0 ** 30.0) * 2.0 * const.PI * const.NA * (self._n(ni) ** 2.0) * self._i1(t, v, ni) *
+                self._m2eps1sig3(t, ni) / (self._v_a3(v) ** 2.0)) - \
+               (2.0 * const.PI * const.NA * (self._n(ni) ** 2.0) * self._m2eps1sig3(t, ni) * self._i1_v(t, v, ni) /
+                self._v_a3(v))
 
     def _fdisp1_v_num(self, t, v, ni):
         # Finite difference derivative implemented for testing.
@@ -1076,14 +1059,14 @@ class sPCSAFT(EOS):
 
     def _fdisp1_i(self, t, v, ni):
         # de Villers (2011), Equation F-73
-        return -PI * NA * (4.0 * self._n(ni) * self._i1(t, v, ni) * self._m2eps1sig3(t, ni) +
-                           2.0 * (self._n(ni) ** 2.0) * self._i1(t, v, ni) * self._m2eps1sig3_i(t, ni) +
-                           2.0 * (self._n(ni) ** 2.0) * self._i1_i(t, v, ni) * self._m2eps1sig3(t, ni)) / \
+        return - const.PI * const.NA * (4.0 * self._n(ni) * self._i1(t, v, ni) * self._m2eps1sig3(t, ni) +
+                                        2.0 * (self._n(ni) ** 2.0) * self._i1(t, v, ni) * self._m2eps1sig3_i(t, ni) +
+                                        2.0 * (self._n(ni) ** 2.0) * self._i1_i(t, v, ni) * self._m2eps1sig3(t, ni)) / \
                self._v_a3(v)
 
     def _fdisp2(self, t, v, ni):
         # Created for debugging purposes (allows us to test partial derivatives numerically).
-        return -(PI * NA * (self._n(ni) ** 2.0) * self._c1(t, v, ni) * self._m(ni) * self._i2(t, v, ni) *
+        return -(const.PI * const.NA * (self._n(ni) ** 2.0) * self._c1(t, v, ni) * self._m(ni) * self._i2(t, v, ni) *
                  self._m2eps2sig3(t, ni) / self._v_a3(v))
 
     def _fdisp2_v(self, t, v, ni):
@@ -1091,11 +1074,11 @@ class sPCSAFT(EOS):
         #
         # Note that the conversion factor from [m3] to [Å**3] exists here but not in de Villers. This is due to the
         # conversion in this implementation being separated into _v_a3 and application of the chain rule to _v_a3.
-        return ((10.0 ** 30.0) * PI * NA * (self._n(ni) ** 2.0) * self._m(ni) * self._c1(t, v, ni) *
+        return ((10.0 ** 30.0) * const.PI * const.NA * (self._n(ni) ** 2.0) * self._m(ni) * self._c1(t, v, ni) *
                 self._i2(t, v, ni) * self._m2eps2sig3(t, ni) / (self._v_a3(v) ** 2.0)) - \
-               (PI * NA * (self._n(ni) ** 2.0) * self._m(ni) * self._i2(t, v, ni) * self._m2eps2sig3(t, ni) *
+               (const.PI * const.NA * (self._n(ni) ** 2.0) * self._m(ni) * self._i2(t, v, ni) * self._m2eps2sig3(t, ni)*
                 self._c1_v(t, v, ni) / self._v_a3(v)) - \
-               (PI * NA * (self._n(ni) ** 2.0) * self._m(ni) * self._c1(t, v, ni) * self._m2eps2sig3(t, ni) *
+               (const.PI * const.NA * (self._n(ni) ** 2.0) * self._m(ni) * self._c1(t, v, ni) * self._m2eps2sig3(t, ni)*
                 self._i2_v(t, v, ni) / self._v_a3(v))
 
     def _fdisp2_v_num(self, t, v, ni):
@@ -1104,7 +1087,8 @@ class sPCSAFT(EOS):
 
     def _fdisp2_i(self, t, v, ni):
         # de Villers, Equation F-78
-        return -PI * NA * ((self._n(ni) ** 2.0) * self._c1(t, v, ni) * self._i2(t, v, ni) * self._m2eps2sig3(t, ni) *
+        return -const.PI * const.NA * ((self._n(ni) ** 2.0) * self._c1(t, v, ni) * self._i2(t, v, ni) *
+                                       self._m2eps2sig3(t, ni) *
                            self._m_i(ni) +
                            2.0 * self._n(ni) * self._c1(t, v, ni) * self._i2(t, v, ni) * self._m2eps2sig3(t, ni) *
                            self._m(ni) +
