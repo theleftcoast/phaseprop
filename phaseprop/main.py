@@ -1,7 +1,7 @@
 """Multiphase equilibrium and thermophysical property estimation."""
 
-import pure_comp_parm as pcp
-import comp
+import pure_parms as pcp
+
 
 if __name__ == "__main__":
     # Define association sites corresponding to water as a symmetrically associating 4C molecule.
@@ -233,7 +233,7 @@ if __name__ == "__main__":
     print(pcp.dodecane)
     print(pcp.nitrogen)
     print(pcp.oxygen)
+    print(pcp.argon)
     print(pcp.water)
     print(pcp.methanol)
     print(pcp.acetone)
-

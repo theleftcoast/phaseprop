@@ -1,10 +1,16 @@
-"""Pure component parameters."""
+"""Pure component parameters and association groups."""
 
+import copy
 import comp
 import refs
 import utility
 import units
-import assoc
+
+# Generic association siteas and groups.
+aromatic = comp.AssocGroup(desc='aromatic',
+                           scheme='1:0')
+aromatic_ed = comp.AssocSite(desc='pi electrons',
+                             type='electron donor')
 
 # Added by John Towne on April 1st, 2022, hcomb is suspiciously different than NIST
 methane = comp.Comp(name='methane',
@@ -141,7 +147,6 @@ methane = comp.Comp(name='methane',
                                                    disp_energy=150.03,
                                                    source=refs.gross_sadowski))
 
-# Added by John Towne on April 1st, 2022
 ethane = comp.Comp(name='ethane',
                    cas_no='74-84-0',
                    formula='C2H6',
@@ -274,7 +279,6 @@ ethane = comp.Comp(name='ethane',
                                                   disp_energy=191.42,
                                                   source=refs.gross_sadowski))
 
-# Added by John Towne on April 1st, 2022.
 propane = comp.Comp(name='propane',
                     cas_no='74-98-6',
                     formula='C3H8',
@@ -408,7 +412,6 @@ propane = comp.Comp(name='propane',
                                                    disp_energy=208.11,
                                                    source=refs.gross_sadowski))
 
-# Added by John Towne on April 15th, 2022.
 n_butane = comp.Comp(name='butane',
                      cas_no='106-97-8',
                      formula='C4H10',
@@ -500,7 +503,6 @@ n_butane = comp.Comp(name='butane',
                                                     disp_energy=222.88,
                                                     source=refs.gross_sadowski))
 
-# Added by John Towne on April 15th, 2022.
 i_butane = comp.Comp(name='2-methylpropane',
                      cas_no='75-28-5',
                      formula='C4H10',
@@ -544,7 +546,6 @@ i_butane = comp.Comp(name='2-methylpropane',
                                                     disp_energy=216.53,
                                                     source=refs.gross_sadowski))
 
-# Added by John Towne on April 17th, 2022.
 n_pentane = comp.Comp(name='pentane',
                       cas_no='109-66-0',
                       formula='C5H12',
@@ -588,7 +589,6 @@ n_pentane = comp.Comp(name='pentane',
                                                      disp_energy=231.2,
                                                      source=refs.gross_sadowski))
 
-# Added by John Towne on April 17th, 2022.
 i_pentane = comp.Comp(name='2-methylbutane',
                       cas_no='78-78-4',
                       formula='C5H12',
@@ -632,7 +632,6 @@ i_pentane = comp.Comp(name='2-methylbutane',
                                                      disp_energy=230.75,
                                                      source=refs.gross_sadowski))
 
-# Added by John Towne on April 17th, 2022.
 n_hexane = comp.Comp(name='hexane',
                      cas_no='110-54-3',
                      formula='C6H14',
@@ -670,9 +669,12 @@ n_hexane = comp.Comp(name='hexane',
                                       source=refs.dippr),
                      acentric=utility.Const(value=0.301261,
                                             unit='dimensionless',
-                                            source=refs.dippr))
+                                            source=refs.dippr),
+                     spc_saft_phys=comp.sPCSAFTPhys(seg_num=3.0576,
+                                                    seg_diam=3.7983,
+                                                    disp_energy=236.77,
+                                                    source=refs.gross_sadowski))
 
-# Added by John Towne on April 29th, 2022.
 c_hexane = comp.Comp(name='cyclohexane',
                      cas_no='110-82-7',
                      formula='C6H12',
@@ -710,9 +712,12 @@ c_hexane = comp.Comp(name='cyclohexane',
                                       source=refs.dippr),
                      acentric=utility.Const(value=0.208054,
                                             unit='dimensionless',
-                                            source=refs.dippr))
+                                            source=refs.dippr),
+                     spc_saft_phys=comp.sPCSAFTPhys(seg_num=2.5303,
+                                                    seg_diam=3.8499,
+                                                    disp_energy=278.11,
+                                                    source=refs.gross_sadowski))
 
-# Added by John Towne on April 29th, 2022.
 benzene = comp.Comp(name='benzene',
                     cas_no='71-43-2',
                     formula='C6H6',
@@ -750,9 +755,19 @@ benzene = comp.Comp(name='benzene',
                                      source=refs.dippr),
                     acentric=utility.Const(value=0.2103,
                                            unit='dimensionless',
-                                           source=refs.dippr))
+                                           source=refs.dippr),
+                    spc_saft_phys=comp.sPCSAFTPhys(seg_num=2.305,
+                                                   seg_diam=3.732,
+                                                   disp_energy=291.23,
+                                                   source=refs.marshall_2019),
+                    spc_saft_polar=comp.sPCSAFTPolar(polar_strength=2.16,
+                                                     phantom_dipole=False,
+                                                     source=refs.marshall_2019))
+benzene_assoc_group = copy.deepcopy(aromatic)
+benzene_ed = copy.deepcopy(aromatic_ed)
+benzene_assoc_group.add_site(benzene_ed)
+benzene.add_assoc_group(benzene_assoc_group)
 
-# Added by John Towne on April 29th, 2022.
 heptane = comp.Comp(name='heptane',
                     cas_no='142-82-5',
                     formula='C7H16',
@@ -790,9 +805,12 @@ heptane = comp.Comp(name='heptane',
                                      source=refs.dippr),
                     acentric=utility.Const(value=0.349469,
                                            unit='dimensionless',
-                                           source=refs.dippr))
+                                           source=refs.dippr),
+                    spc_saft_phys=comp.sPCSAFTPhys(seg_num=3.4831,
+                                                   seg_diam=3.8049,
+                                                   disp_energy=238.4,
+                                                   source=refs.gross_sadowski))
 
-# Added by John Towne on April 29th, 2022.
 mc_hexane = comp.Comp(name='methylcyclohexane',
                       cas_no='108-87-2',
                       formula='C7H14',
@@ -830,9 +848,12 @@ mc_hexane = comp.Comp(name='methylcyclohexane',
                                        source=refs.dippr),
                       acentric=utility.Const(value=0.236055,
                                              unit='dimensionless',
-                                             source=refs.dippr))
+                                             source=refs.dippr),
+                      spc_saft_phys=comp.sPCSAFTPhys(seg_num=2.6637,
+                                                     seg_diam=3.9993,
+                                                     disp_energy=282.33,
+                                                     source=refs.gross_sadowski))
 
-# Added by John Towne on April 30th, 2022.
 toluene = comp.Comp(name='toluene',
                     cas_no='108-88-3',
                     formula='C7H8',
@@ -870,9 +891,19 @@ toluene = comp.Comp(name='toluene',
                                      source=refs.dippr),
                     acentric=utility.Const(value=0.264012,
                                            unit='dimensionless',
-                                           source=refs.dippr))
+                                           source=refs.dippr),
+                    spc_saft_phys=comp.sPCSAFTPhys(seg_num=2.612,
+                                                   seg_diam=3.814,
+                                                   disp_energy=293.33,
+                                                   source=refs.marshall_2019),
+                    spc_saft_polar=comp.sPCSAFTPolar(polar_strength=2.16,
+                                                     phantom_dipole=False,
+                                                     source=refs.marshall_2019))
+toluene_assoc_group = copy.deepcopy(aromatic)
+toluene_ed = copy.deepcopy(aromatic_ed)
+toluene_assoc_group.add_site(benzene_ed)
+toluene.add_assoc_group(benzene_assoc_group)
 
-# Added by John Towne on April 30th, 2022.
 octane = comp.Comp(name='octane',
                    cas_no='111-65-9',
                    formula='C8H18',
@@ -910,9 +941,12 @@ octane = comp.Comp(name='octane',
                                     source=refs.dippr),
                    acentric=utility.Const(value=0.399552,
                                           unit='dimensionless',
-                                          source=refs.dippr))
+                                          source=refs.dippr),
+                   spc_saft_phys=comp.sPCSAFTPhys(seg_num=3.8176,
+                                                  seg_diam=3.8373,
+                                                  disp_energy=242.78,
+                                                  source=refs.gross_sadowski))
 
-# Added by John Towne on May 2nd, 2022.
 nonane = comp.Comp(name='nonane',
                    cas_no='111-84-2',
                    formula='C9H20',
@@ -950,9 +984,12 @@ nonane = comp.Comp(name='nonane',
                                     source=refs.dippr),
                    acentric=utility.Const(value=0.44346,
                                           unit='dimensionless',
-                                          source=refs.dippr))
+                                          source=refs.dippr),
+                   spc_saft_phys=comp.sPCSAFTPhys(seg_num=4.2079,
+                                                  seg_diam=3.8448,
+                                                  disp_energy=244.51,
+                                                  source=refs.gross_sadowski))
 
-# Added by John Towne on May 3rd, 2022.
 decane = comp.Comp(name='decane',
                    cas_no='124-18-5',
                    formula='C10H22',
@@ -990,9 +1027,12 @@ decane = comp.Comp(name='decane',
                                     source=refs.dippr),
                    acentric=utility.Const(value=0.492328,
                                           unit='dimensionless',
-                                          source=refs.dippr))
+                                          source=refs.dippr),
+                   spc_saft_phys=comp.sPCSAFTPhys(seg_num=4.6627,
+                                                  seg_diam=3.8384,
+                                                  disp_energy=243.87,
+                                                  source=refs.gross_sadowski))
 
-# Added by John Towne on May 3rd, 2022.
 undecane = comp.Comp(name='undecane',
                      cas_no='1120-21-4',
                      formula='C11H24',
@@ -1030,9 +1070,12 @@ undecane = comp.Comp(name='undecane',
                                       source=refs.dippr),
                      acentric=utility.Const(value=0.530316,
                                             unit='dimensionless',
-                                            source=refs.dippr))
+                                            source=refs.dippr),
+                     spc_saft_phys=comp.sPCSAFTPhys(seg_num=4.9082,
+                                                    seg_diam=3.8893,
+                                                    disp_energy=248.82,
+                                                    source=refs.gross_sadowski))
 
-# Added by John Towne on May 3rd, 2022.
 dodecane = comp.Comp(name='dodecane',
                      cas_no='112-40-3',
                      formula='C12H26',
@@ -1070,9 +1113,12 @@ dodecane = comp.Comp(name='dodecane',
                                       source=refs.dippr),
                      acentric=utility.Const(value=0.576385,
                                             unit='dimensionless',
-                                            source=refs.dippr))
+                                            source=refs.dippr),
+                     spc_saft_phys=comp.sPCSAFTPhys(seg_num=5.3060,
+                                                    seg_diam=3.8959,
+                                                    disp_energy=249.21,
+                                                    source=refs.gross_sadowski))
 
-# Added by John Towne on May 4th, 2022.
 nitrogen = comp.Comp(name='nitrogen',
                      cas_no='7727-37-9',
                      formula='N2',
@@ -1110,9 +1156,12 @@ nitrogen = comp.Comp(name='nitrogen',
                                       source=refs.dippr),
                      acentric=utility.Const(value=0.0377215,
                                             unit='dimensionless',
-                                            source=refs.dippr))
+                                            source=refs.dippr),
+                     spc_saft_phys=comp.sPCSAFTPhys(seg_num=1.2053,
+                                                    seg_diam=3.3130,
+                                                    disp_energy=90.96,
+                                                    source=refs.gross_sadowski))
 
-# Added by John Towne on May 5th, 2022.
 oxygen = comp.Comp(name='oxygen',
                    cas_no='7782-44-7',
                    formula='O2',
@@ -1150,9 +1199,57 @@ oxygen = comp.Comp(name='oxygen',
                                     source=refs.dippr),
                    acentric=utility.Const(value=0.0221798,
                                           unit='dimensionless',
-                                          source=refs.dippr))
+                                          source=refs.dippr),
+                   spc_saft_phys=comp.sPCSAFTPhys(seg_num=1.1217,
+                                                  seg_diam=3.2098,
+                                                  disp_energy=114.96,
+                                                  source=refs.economou_2007))
 
-# Added by John Towne on May 6th, 2022.
+argon = comp.Comp(name='argon',
+                  cas_no='7440-37-1',
+                  formula='Ar',
+                  family='inorganic',
+                  mw=utility.Const(value=39.948,
+                                   unit='g/mol',
+                                   source=refs.dippr),
+                  pvap_l=utility.RiedelPvap(a=42.127,
+                                            b=-1093.1,
+                                            c=-4.1425,
+                                            d=0.000057254,
+                                            e=2.0,
+                                            unit='Pa',
+                                            t_unit='K',
+                                            t_min=83.78,
+                                            t_max=150.86,
+                                            source=refs.dippr),
+                  den_l=utility.DaubertDenL(a=3.8469,
+                                            b=0.2881,
+                                            c=150.86,
+                                            d=0.29783,
+                                            unit='mol/dm3',
+                                            t_unit='K',
+                                            t_min=83.78,
+                                            t_max=150.86,
+                                            source=refs.dippr),
+                  tc=utility.Const(value=150.86,
+                                   unit='K',
+                                   source=refs.dippr),
+                  pc=utility.Const(value=units.to_si(4.898, 'MPa'),
+                                   unit=units.to_si_unit('MPa'),
+                                   source=refs.dippr),
+                  vc=utility.Const(value=units.to_si(0.07459, 'm3/kmol'),
+                                   unit=units.to_si_unit('m3/kmol'),
+                                   source=refs.dippr),
+                  acentric=utility.Const(value=0.0,
+                                         unit='dimensionless',
+                                         source=refs.dippr),
+                  spc_saft_phys=comp.sPCSAFTPhys(seg_num=0.9285,
+                                                 seg_diam=3.4784,
+                                                 disp_energy=122.23,
+                                                 source=refs.gross_sadowski))
+
+
+# Stoped validating sPCSAFT parameters here.
 water = comp.Comp(name='water',
                   cas_no='',
                   formula='H2O',
@@ -1182,9 +1279,52 @@ water = comp.Comp(name='water',
                                    source=refs.dippr),
                   acentric=utility.Const(value=0.344861,
                                          unit='dimensionless',
-                                         source=refs.dippr))
+                                         source=refs.dippr),
+                  spc_saft_phys=comp.sPCSAFTPhys(seg_num=1.179,
+                                                 seg_diam=2.9154,
+                                                 disp_energy=184.763,
+                                                 source=refs.marshall_2019a),
+                  spc_saft_polar=comp.sPCSAFTPolar(polar_strength=1.345,
+                                                   phantom_dipole=False,
+                                                   source=refs.marshall_2019a))
 
-# Added by John Towne on May 6th, 2022.
+water_assoc_group = comp.AssocGroup(desc='water',
+                                    scheme='2:2')
+water_h1 = comp.AssocSite(desc='hydrogen atom',
+                          type='electron acceptor')
+water_h2 = comp.AssocSite(desc='hydrogen atom',
+                          type='electron acceptor')
+water_o1 = comp.AssocSite(desc='oxygen lone pair',
+                          type='electron donor')
+water_o2 = comp.AssocSite(desc='oxygen lone pair',
+                          type='electron donor')
+water_assoc_group.add_site(water_h1)
+water_assoc_group.add_site(water_h2)
+water_assoc_group.add_site(water_o1)
+water_assoc_group.add_site(water_o2)
+water.add_assoc_group(water_assoc_group)
+water_h1_o1 = comp.AssocSiteInter(site_a=water_h1,
+                                  site_b=water_o1,
+                                  assoc_energy=1716.3,
+                                  assoc_vol=0.0615,
+                                  source=refs.marshall_2019a)
+water_h1_o2 = comp.AssocSiteInter(site_a=water_h1,
+                                  site_b=water_o2,
+                                  assoc_energy=1716.3,
+                                  assoc_vol=0.0615,
+                                  source=refs.marshall_2019a)
+water_h2_o1 = comp.AssocSiteInter(site_a=water_h2,
+                                  site_b=water_o1,
+                                  assoc_energy=1716.3,
+                                  assoc_vol=0.0615,
+                                  source=refs.marshall_2019a)
+water_h2_o2 = comp.AssocSiteInter(site_a=water_h2,
+                                  site_b=water_o2,
+                                  assoc_energy=1716.3,
+                                  assoc_vol=0.0615,
+                                  source=refs.marshall_2019a)
+water.spc_saft_assoc.extend([water_h1_o1, water_h1_o2, water_h2_o1, water_h2_o2])
+
 methanol = comp.Comp(name='methanol',
                      cas_no='67-56-1',
                      formula='CH3OH',
@@ -1224,22 +1364,30 @@ methanol = comp.Comp(name='methanol',
                                             unit='dimensionless',
                                             source=refs.dippr))
 
-methanol_h = comp.AssocSite(comp=methanol,
-                            site='H',
-                            type='ea')
-methanol_o = comp.AssocSite(comp=methanol,
-                            site='O',
-                            type='ed')
+methanol_assoc_group = comp.AssocGroup(desc='methanol',
+                                       scheme='2:1')
+methanol_h1 = comp.AssocSite(desc='hydrogen atom',
+                             type='electron acceptor')
+methanol_o1 = comp.AssocSite(desc='oxygen lone pair',
+                             type='electron donor')
+methanol_o2 = comp.AssocSite(desc='oxygen lone pair',
+                             type='electron donor')
+methanol_assoc_group.add_site(methanol_h1)
+methanol_assoc_group.add_site(methanol_o1)
+methanol_assoc_group.add_site(methanol_o2)
+methanol.add_assoc_group(methanol_assoc_group)
+methanol_h1_o1 = comp.AssocSiteInter(site_a=methanol_h1,
+                                     site_b=methanol_o1,
+                                     assoc_energy=2226.94,
+                                     assoc_vol=0.043,
+                                     source=refs.marshall_2020)
+methanol_h1_o2 = comp.AssocSiteInter(site_a=methanol_h1,
+                                     site_b=methanol_o2,
+                                     assoc_energy=2226.94,
+                                     assoc_vol=0.043,
+                                     source=refs.marshall_2020)
+methanol.spc_saft_assoc.extend([methanol_h1_o1, methanol_h1_o2])
 
-methanol.assoc_sites = [methanol_h, methanol_o]
-
-methanol_h_o_inter = comp.AssocSiteInter(site_a=methanol_h,
-                                         site_b=methanol_o,
-                                         assoc_energy=2000.0,
-                                         assoc_vol=0.5,
-                                         source='asdf')
-
-# Added by John Towne on May 9th, 2022.
 acetone = comp.Comp(name='acetone',
                     cas_no='67-64-1',
                     formula='C3H6O',
@@ -1277,3 +1425,13 @@ acetone = comp.Comp(name='acetone',
                     acentric=utility.Const(value=0.306527,
                                            unit='dimensionless',
                                            source=refs.dippr))
+acetone_assoc_group = comp.AssocGroup(desc='ketone',
+                                      scheme='2:0')
+acetone_o1 = comp.AssocSite(desc='oxygen lone pair',
+                            type='electron donor')
+acetone_o2 = comp.AssocSite(desc='oxygen lone pair',
+                            type='electron donor')
+acetone_assoc_group.add_site(acetone_o1)
+acetone_assoc_group.add_site(acetone_o2)
+acetone.add_assoc_group(acetone_assoc_group)
+

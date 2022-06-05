@@ -16,6 +16,7 @@ import textwrap as tw
 import dataclasses
 import typing
 import utility
+import spc_saft
 
 
 FAMILY = ['alkane',
@@ -44,89 +45,6 @@ FAMILY = ['alkane',
           'silane',
           'inorganic',
           'multifunctional']
-
-
-@dataclasses.dataclass
-class sPCSAFTPhys(object):
-    """Simplified PC-SAFT equation of state physical parameters for a single component.
-
-    Parameters
-    ----------
-    seg_num : float
-        Segment number.
-    seg_diam : float
-        Segment diameter.
-    disp_energy : float
-        Soave alpha function.
-    ck_parm : float
-        Chen and Kreglewski parameter (usually set to 0.12, except for hydrogen and helium).
-    source : str, optional
-        Source of the parameters (ACS citation format preferred).
-    notes : str, optional
-        Notes associated with the parameters.
-
-    Notes
-    -----
-    Chen and Kreglewski temperature-dependent integral parameter is 0.12 for nearly all compounds. However, it can be
-    set to 0.241 for hydrogen (see eq 2-6 in _[1] and eq 2-10 in _[2]). This is a useful correction for quantum gases
-    (hydrogen and helium).
-
-    References
-    ----------
-    [1] de Villiers, A. J. Evaluation and improvement of the sPC-SAFT equation of state for complex mixtures. PhD
-     thesis, Stellenbosch University, 2011.
-    [2] Tihic, A.; Group contribution sPC-SAFT equation of state, Ph.D. Thesis, Denmark Technical University, 2008.
-    """
-    seg_num: float
-    seg_diam: float
-    disp_energy: float
-    ck_parm: float = 0.12
-    source: typing.Optional[str] = None
-    notes: typing.Optional[str] = None
-
-    def __str__(self):
-        return "m: {}, sigma: {}, epsilon: {}, ck: {}".format(self.seg_num,
-                                                              self.seg_diam,
-                                                              self.disp_energy,
-                                                              self.ck_parm)
-
-
-@dataclasses.dataclass
-class sPCSAFTPolar(object):
-    """Simplified PC-SAFT equation of state polar parameters for a single component.
-
-    Parameters
-    ----------
-    polar_strength : float
-        Polar strength of the compound.
-    phantom_dipole : bool, default: false
-        Cancels the interaction between phantom dipoles in the absence of permanent dipoles.
-    source : str, optional
-        Source of the parameters (ACS citation format preferred).
-    notes : str, optional
-        Notes associated with the parameters.
-
-    Notes
-    -----
-    The 'polar parameter' lumps several adjustable parameters into a single variable which simplifies implementation of
-    Jog and Chapman's SAFT dipolar term. The 'phantom dipole' represents dipole induced dipole interactions in
-    unsaturated hydrocarbons. If an unsaturated hydrocarbon is not in
-
-    References
-    ----------
-    [1] Marshall, B. D.; Bokis, C. P. A PC-SAFT Model for Hydrocarbons I: Mapping Aromatic π-π Interactions onto a
-    Dipolar Free Energy. Fluid Phase Equilibria 2019, 489, 83–89.
-    [2] Marshall, B. D. A PC-SAFT Model for Hydrocarbons III: Phantom Dipole Representation of Dipole Induced Dipole
-    Interactions in Unsaturated Hydrocarbons. Fluid Phase Equilibria 2019, 493, 153–159.
-    """
-    polar_strength: float
-    phantom_dipole: bool = False
-    source: typing.Optional[str] = None
-    notes: typing.Optional[str] = None
-
-    def __str__(self):
-        return "alpha: {}, phantom: {}".format(self.polar_strength,
-                                               self.phantom_dipole)
 
 
 @dataclasses.dataclass
@@ -207,12 +125,8 @@ class Comp(object):
         Surface tension.
     assoc_sites : list, optional
         List of AssocSite objects representing association sites.
-    spc_saft_phys : spc_saft.sPCSAFTPhys, optional
-        sPC-SAFT equation of state physical parameters.
-    spc_saft_phys : spc_saft.sPCSAFTPolar, optional
-        sPC-SAFT equation of state polar parameters.
-    spc_saft_assoc : list, optional
-        sPC-SAFT equation of state association interactions (list of AssocSiteInter objects).
+    spc_saft_parms : dict, optional
+        sPC-SAFT equation of state parameters (key is a parm_set, value is spc_saft.sPCSAFTParms).
     """
 
     # Metadata and constants.
@@ -257,13 +171,8 @@ class Comp(object):
     tcond_ig: typing.Optional[typing.Union[utility.KineticTcondIg, utility.PolyTcondIg]] = None
     surf_ten: typing.Optional[utility.SurfTen] = None
 
-    # Association sites.
-    assoc_sites: typing.Optional[list] = None
-
     # sPC-SAFT EOS.
-    spc_saft_phys: typing.Optional[sPCSAFTPhys] = None
-    spc_saft_polar: typing.Optional[sPCSAFTPolar] = None
-    spc_saft_assoc: typing.Optional[list] = None
+    spc_saft_parms: typing.Dict[str, spc_saft.sPCSAFTParms] = dataclasses.field(default_factory=dict)
 
 
     def __post_init__(self):
@@ -285,7 +194,10 @@ class Comp(object):
         float
             Wilson's K-factor.
         """
-        return (self._pc / p) * np.exp(5.37 * (1.0 + self._acentric) * (1.0 - self._tc / t))
+        if self.tc and self.pc and self.acentric:
+            return (self.pc / p) * np.exp(5.37 * (1.0 + self.acentric) * (1.0 - self.tc / t))
+        else:
+            raise ValueError("tc, pc, and acentric must be defined.")
 
     def melting_curve(self, t=None):
         """Melting curve for a pure solid.
@@ -402,9 +314,6 @@ class Comp(object):
                         'Vapor Thermal Conductivity': (self.tcond_ig, 'K', 'W/m.K'),
                         'Liquid Thermal Conductivity': (self.tcond_l, 'K', 'W/m.K'),
                         'Surface Tension': (self.surf_ten, 'K', 'N/m')}
-        spc_saft = {'sPC-SAFT Physical': self.spc_saft_phys,
-                    'sPC-SAFT Polar': self.spc_saft_polar,
-                    'sPC-SAFT Assoc': self.spc_saft_assoc}
 
         output = []
         for key, value in metadata.items():
@@ -427,14 +336,25 @@ class Comp(object):
                                                                                       value[1],
                                                                                       value[0](value[0].t_max),
                                                                                       value[2]))
-        if self.assoc_sites is not None:
-            output.append("Association Sites\n")
-            for site in self.assoc_sites:
-                output.append("    {}\n".format(str(site)))
-        for key, value in spc_saft.items():
-            if value is not None:
-                output.append("{} \n".format(key))
-                output.append("{}\n".format(tw.indent(str(value), "    ")))
+        if self.assoc_groups:
+            output.append("Association Groups\n")
+            for group in self.assoc_groups:
+                output.append("    {}\n".format(str(group)))
+        if self.spc_saft_phys is not None:
+            output.append("sPC-SAFT Physical Parameters\n")
+            output.append("    {}\n".format(str(self.spc_saft_phys)))
+        if self.spc_saft_polar is not None:
+            output.append("sPC-SAFT Polar Parameters\n")
+            output.append("    {}\n".format(str(self.spc_saft_polar)))
+        if self.spc_saft_assoc:
+            output.append("sPC-SAFT Association Parameters\n")
+            for i, interaction in enumerate(self.spc_saft_assoc):
+                output.append('    Interaction {}\n'.format(i))
+                output.append("{}\n".format(tw.indent(str(interaction), "        ")))
+        # for key, value in spc_saft.items():
+        #     if value is not None:
+        #         output.append("{} \n".format(key))
+        #         output.append("{}\n".format(tw.indent(str(value), "    ")))
         return "".join(output)
 
 
@@ -493,69 +413,3 @@ class CompSet(object):
             else:
                 result.append(comp.mw)
         return np.array(result)
-
-
-@dataclasses.dataclass(eq=True, frozen=True)
-class AssocSite(object):
-    """Association site."""
-    comp: Comp
-    site: str
-    type: str
-    desc: typing.Optional[str] = None
-
-    def __post_init__(self):
-        if self.type not in ['ed', 'ea', 'glue', 'pi_stack']:
-            raise ValueError("Site type not valid.")
-
-    def __str__(self):
-        return "Comp: {}, Site: {}, Type: {}".format(self.comp.name, self.site, self.type)
-
-    def can_interact(self, other):
-        if isinstance(other, AssocSite):
-            if self.type == 'ea' and other.type == 'ed':
-                return True
-            elif self.type == 'ed' and other.type == 'ea':
-                return True
-            elif self.type == 'glue' and other.type == 'glue':
-                return True
-            elif self.type == 'pi_stack' and other.type == 'pi_stack':
-                return True
-            else:
-                return False
-        return False
-
-
-@dataclasses.dataclass
-class AssocSiteInter(object):
-    """Interaction between two association sites.
-
-    Attributes
-    ----------
-    site_a : AssocSite
-        AssocSite participating in the interaction.
-    site_b : AssocSite
-        AssocSite participating in the interaction.
-    assoc_energy : float
-        Association energy between sites.
-    assoc_vol : float
-        Association volume between sites.
-    source : str, optional
-        Source for the association interaction parameters (ACS citation format preferred).
-    notes : str, optional
-        Notes associated with the correlation.
-    """
-    site_a: AssocSite
-    site_b: AssocSite
-    assoc_energy: float
-    assoc_vol: float
-    source: typing.Optional[str] = None
-    notes: typing.Optional[str] = None
-
-    def __str__(self):
-        return "'{}' interacting with '{}'\n" \
-               "    Association Energy: {}\n" \
-               "    Association Volume: {}".format(self.site_a.site,
-                                                   self.site_b.type,
-                                                   self.assoc_energy,
-                                                   self.assoc_vol)
-

@@ -17,8 +17,9 @@ import dataclasses
 import typing
 import const
 import comp
+import assoc
 import eos
-import binary_inter_parm
+import binary_parms
 import assoc
 
 
@@ -121,9 +122,16 @@ class sPCSAFTParms(object):
         Segment diameter.
     disp_energy : float
         Soave alpha function.
-    polar_strength : float
     ck_parm : float
         Chen and Kreglewski parameter (usually set to 0.12, except for hydrogen and helium).
+    polar_strength : float
+        Polar strength of the compound.
+    phantom_dipole : bool, default: false
+        Cancels the interaction between phantom dipoles in the absence of permanent dipoles.
+    assoc_groups : list, optional
+        List of AssocSite objects representing association sites.
+    assoc_inters : list, optional
+        Association interactions (list of AssocSiteInter objects).
     source : str, optional
         Source of the parameters (ACS citation format preferred).
     notes : str, optional
@@ -135,20 +143,106 @@ class sPCSAFTParms(object):
     set to 0.241 for hydrogen (see eq 2-6 in _[1] and eq 2-10 in _[2]). This is a useful correction for quantum gases
     (hydrogen and helium).
 
+    The 'polar parameter' lumps several adjustable parameters into a single variable which simplifies implementation of
+    Jog and Chapman's or Gross and Vrabec's SAFT dipolar term _[3]. The 'phantom dipole' represents dipole induced
+    dipole interactions in unsaturated hydrocarbons _[4].
+
     References
     ----------
     [1] de Villiers, A. J. Evaluation and improvement of the sPC-SAFT equation of state for complex mixtures. PhD
      thesis, Stellenbosch University, 2011.
     [2] Tihic, A.; Group contribution sPC-SAFT equation of state, Ph.D. Thesis, Denmark Technical University, 2008.
+    [3] Marshall, B. D.; Bokis, C. P. A PC-SAFT Model for Hydrocarbons I: Mapping Aromatic π-π Interactions onto a
+    Dipolar Free Energy. Fluid Phase Equilibria 2019, 489, 83–89.
+    [4] Marshall, B. D. A PC-SAFT Model for Hydrocarbons III: Phantom Dipole Representation of Dipole Induced Dipole
+    Interactions in Unsaturated Hydrocarbons. Fluid Phase Equilibria 2019, 493, 153–159.
     """
     seg_num: float
     seg_diam: float
     disp_energy: float
     polar_strength: float
+    phantom_dipole: bool = False
     ck_parm: float = 0.12
+    assoc_groups: typing.List[assoc.AssocGroup] = dataclasses.field(default_factory=list)
+    assoc_inters: typing.List[assoc.AssocSiteInter] = dataclasses.field(default_factory=list)
     source: typing.Optional[str] = None
     notes: typing.Optional[str] = None
 
+    def add_assoc_group(self, group):
+        if isinstance(group, assoc.AssocGroup):
+            self.assoc_groups.append(group)
+        else:
+            raise TypeError('group is not an AssocGroup')
+
+    def add_assoc_inter(self, inter):
+        if isinstance(inter, assoc.AssocSiteInter):
+            self.assoc_inters.append(inter)
+        else:
+            raise TypeError('group is not an AssocGroup')
+
+
+@dataclasses.dataclass
+class sPCSAFTInterReforged(object):
+    """Physical interactions between components."""
+    spc_saft_spec: sPCSAFTSpec
+    pure_parms: typing.List[sPCSAFTParms]
+    binary_parms: list
+
+    def __post_init__(self):
+        pass
+
+    @property
+    def seg_num(self):
+        sn = []
+        for parm in self.pure_parms:
+            sn.append(parm.seg_num)
+        return np.array(sn)
+
+    @property
+    def seg_diam(self):
+        sd = []
+        for parm in self.pure_parms:
+            sd.append(parm.seg_diam)
+        return np.array(sd)
+
+    @property
+    def disp_energy(self):
+        de = []
+        for parm in self.pure_parms:
+            de.append(parm.disp_energy)
+        return np.array(de)
+
+    @property
+    def polar_strength(self):
+        ps = []
+        for parm in self.pure_parms:
+            ps.append(parm.polar_strength)
+        return np.array(ps)
+
+    @property
+    def phantom_dipole(self):
+        pd = []
+        for parm in self.pure_parms:
+            pd.append(int(parm.phantom_dipole))
+        return np.array(pd)
+
+    @property
+    def ck_parm(self):
+        ck = []
+        for parm in self.pure_parms:
+            ck.append(parm.disp_energy)
+        return np.array(ck)
+
+    def k_ij(self, t: float) -> float:
+        # Build array of interaction parameters for all comp combinations.
+        n = len(self.pure_parms)
+        k_ij = np.zeros((n, n))
+        for bp in self.binary_parms:
+            i = 1  # TODO: Reimplement binary interaction parameters between pure component parameter sets.
+            j = 1  # TODO: Reimplement binary interaction parameters between pure component parameter sets.
+            k_ij[i, j] = bp.k_ij(t=t)
+            k_ij[j, i] = bp.k_ij(t=t)
+        return k_ij
 
 class sPCSAFTPhysInter(object):
     """Physical interactions between components."""
@@ -478,14 +572,14 @@ class sPCSAFTPhysInter(object):
         result = []
         for comp_i in self._comps.comps:
             for comp_j in self._comps.comps:
-                new = binary_inter_parm.BinaryInterParm(comp_i, comp_j, temp_indep_coef=0.0)
+                new = binary_parms.BinaryInterParm(comp_i, comp_j, temp_indep_coef=0.0)
                 if new not in result:
                     result.append(new)
         return result
 
     def load_binary_parms(self, input):
         # Load coefficients and source from BinaryInterParm (bip) objects.
-        if isinstance(input, binary_inter_parm.BinaryInterParm):
+        if isinstance(input, binary_parms.BinaryInterParm):
             for _bp in self._binary_parms:
                 if input == _bp:
                     _bp.temp_indep_coef = input.temp_indep_coef
@@ -504,7 +598,7 @@ class sPCSAFTPhysInter(object):
                         _bp.source = bp.source
         elif isinstance(input, list):
             for item in input:
-                if isinstance(item, binary_inter_parm.BinaryInterParm):
+                if isinstance(item, binary_parms.BinaryInterParm):
                     for _bp in self._binary_parms:
                         if item == _bp:
                             _bp.temp_indep_coef = item.temp_indep_coef
