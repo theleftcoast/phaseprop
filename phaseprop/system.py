@@ -3,7 +3,7 @@ import copy
 import numpy as np
 from scipy.optimize import minimize
 from utility import Callback
-from comp import CompSet
+from comps import CompSet
 from spc_saft import sPCSAFT
 from cpa import CPA
 

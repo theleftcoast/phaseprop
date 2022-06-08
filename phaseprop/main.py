@@ -1,7 +1,6 @@
 """Multiphase equilibrium and thermophysical property estimation."""
 
-import pure_parms as pcp
-
+import comps
 
 if __name__ == "__main__":
     # Define association sites corresponding to water as a symmetrically associating 4C molecule.
@@ -212,28 +211,9 @@ if __name__ == "__main__":
     # print("Water heat of vaporization correlation defined: {}".format(water.hvap.defined()))
     # print("Water heat of vaporization at triple point: {}".format(water.hvap(water.hvap.t_min)))
     # print("Water heat of vaporization at critical point: {}".format(water.hvap(water.hvap.t_max)))
+    print("holy fuck we made it")
 
-    print(pcp.methane)
-    print(pcp.ethane)
-    print(pcp.propane)
-    print(pcp.n_butane)
-    print(pcp.i_butane)
-    print(pcp.n_pentane)
-    print(pcp.i_pentane)
-    print(pcp.n_hexane)
-    print(pcp.c_hexane)
-    print(pcp.benzene)
-    print(pcp.heptane)
-    print(pcp.mc_hexane)
-    print(pcp.toluene)
-    print(pcp.octane)
-    print(pcp.nonane)
-    print(pcp.decane)
-    print(pcp.undecane)
-    print(pcp.dodecane)
-    print(pcp.nitrogen)
-    print(pcp.oxygen)
-    print(pcp.argon)
-    print(pcp.water)
-    print(pcp.methanol)
-    print(pcp.acetone)
+    module = comps
+    for key, value in module.__dict__.items():
+        if isinstance(value, comps.Comp):
+            print(value)

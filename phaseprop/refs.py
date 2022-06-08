@@ -1,4 +1,4 @@
-"""Module to store bibliographic information and references."""
+"""Bibliographic information and references."""
 
 dippr = "Rowley, R. L.; Wilding, W. V.; Oscarson, J. L.; Knotts, T. A.; Giles, N. F. DIPPR Data Compilation of Pure " \
         "Chemical Properties; Design Institute for Physical Properties, AIChE: New York, NY, 2016."
@@ -19,11 +19,17 @@ gross_sadowski = "Gross, J.; Sadowski, G. Perturbed-Chain Saft:  an Equation o
 marshall_2019 = "Marshall, B. D.; Bokis, C. P. A PC-SAFT Model for Hydrocarbons I: Mapping Aromatic π-π Interactions " \
                 "onto a Dipolar Free Energy. Fluid Phase Equilibria 2019, 489, 83–89."
 
+marshall_2018 = "Marshall, B. D. A PC-SAFT Model for Hydrocarbons III: Phantom Dipole Representation of Dipole " \
+                "Induced Dipole Interactions in Unsaturated Hydrocarbons. Fluid Phase Equilibria 2019, 493, 153–159."
+
 marshall_2019a = "Marshall, B. D. A PC-SAFT Model for Hydrocarbons IV: Water-Hydrocarbon Phase Behavior Including " \
                  "Petroleum Pseudo-Components. Fluid Phase Equilibria 2019, 497, 79–86."
 
 marshall_2020 = "Marshall, B. D. A PC-SAFT Model for Hydrocarbons V: Alcohol-hydrocarbon phase behavior with " \
                  "application to petroleum pseudo-components. Fluid Phase Equilibria 2020, 497, 79–86."
+
+marshall_2021 = "Marshall, B. D.; Bokis, C. P. Revisiting the Treatment of Cross-Association Interactions in " \
+                "Oxygenate Mixtures with the Polar PC-Saft Equation of State. Fluid Phase Equilibria 2021, 529, 112867."
 
 economou_2007 = "Economou, I. G.; Makrodimitri, Z. A.; Kontogeorgis, G. M.; Tihic, A. Solubility of Gases and " \
                 "Solvents in Silicon Polymers: Molecular Simulation and Equation of State Modeling. Molecular " \

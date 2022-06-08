@@ -16,10 +16,9 @@ import numpy as np
 import dataclasses
 import typing
 import const
-import comp
-import assoc
+import comps
 import eos
-import binary_parms
+import inter_parm
 import assoc
 
 
@@ -160,8 +159,8 @@ class sPCSAFTParms(object):
     seg_num: float
     seg_diam: float
     disp_energy: float
-    polar_strength: float
-    phantom_dipole: bool = False
+    polar_strength: typing.Optional[float] = None
+    phantom_dipole: typing.Optional[bool] = None
     ck_parm: float = 0.12
     assoc_groups: typing.List[assoc.AssocGroup] = dataclasses.field(default_factory=list)
     assoc_inters: typing.List[assoc.AssocSiteInter] = dataclasses.field(default_factory=list)
@@ -178,7 +177,7 @@ class sPCSAFTParms(object):
         if isinstance(inter, assoc.AssocSiteInter):
             self.assoc_inters.append(inter)
         else:
-            raise TypeError('group is not an AssocGroup')
+            raise TypeError('group is not an AssocInter')
 
 
 @dataclasses.dataclass
@@ -186,7 +185,6 @@ class sPCSAFTInterReforged(object):
     """Physical interactions between components."""
     spc_saft_spec: sPCSAFTSpec
     pure_parms: typing.List[sPCSAFTParms]
-    binary_parms: list
 
     def __post_init__(self):
         pass
@@ -272,7 +270,7 @@ class sPCSAFTPhysInter(object):
         try:
             self._comps
         except AttributeError:
-            if not isinstance(value, comp.CompSet):
+            if not isinstance(value, comps.CompSet):
                 raise TypeError("Component must be an instance of CompSet.")
             self._comps = value
 
@@ -572,14 +570,14 @@ class sPCSAFTPhysInter(object):
         result = []
         for comp_i in self._comps.comps:
             for comp_j in self._comps.comps:
-                new = binary_parms.BinaryInterParm(comp_i, comp_j, temp_indep_coef=0.0)
+                new = inter_parm.BinaryInterParm(comp_i, comp_j, temp_indep_coef=0.0)
                 if new not in result:
                     result.append(new)
         return result
 
     def load_binary_parms(self, input):
         # Load coefficients and source from BinaryInterParm (bip) objects.
-        if isinstance(input, binary_parms.BinaryInterParm):
+        if isinstance(input, inter_parm.BinaryInterParm):
             for _bp in self._binary_parms:
                 if input == _bp:
                     _bp.temp_indep_coef = input.temp_indep_coef
@@ -598,7 +596,7 @@ class sPCSAFTPhysInter(object):
                         _bp.source = bp.source
         elif isinstance(input, list):
             for item in input:
-                if isinstance(item, binary_parms.BinaryInterParm):
+                if isinstance(item, inter_parm.BinaryInterParm):
                     for _bp in self._binary_parms:
                         if item == _bp:
                             _bp.temp_indep_coef = item.temp_indep_coef
