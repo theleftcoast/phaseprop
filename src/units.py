@@ -2,64 +2,70 @@
 
 Attributes
 ----------
-R : float
-    Universal gas constant, J/mol.K
-EC : float
-    Elementary charge, C
-KB : float
-    Boltzmann's constant, J/K
-NA : float
-    Avogadro's number, particles/mol
-C : float
-    Speed of light, m/s
-F : float
-    Faraday constant, C/mol
-PI : float
-    Mathematical constant
-E0 : float
-    Vacuum permittivity, F/m
-MASS : dict
-    Keys are units for mass and values are the conversion factor for that unit into kilograms (or 'kg')
-LENGTH : dict
-    Keys are units for length and values are the conversion factor for that unit into meters (or 'm').
-AREA : dict
-    Keys are units for area and the values are the conversion factor for that unit into square meters (or 'm2')
-VOLUME : dict
-    Keys are units for volume and values are the conversion factor for that unit into cubic meters (or 'm3')
-TEMPERATURE : dict
-    Keys are units for temperature and values are lambda functions (func(x) -> t) which convert that unit into kelvin
-    (or 'K').
-FORCE : dict
-    Keys are units for force and values are the conversion factor for that unit into newtons (or 'N').
-PRESSURE : dict
-    Keys are units for pressure and values are the conversion factor for that unit into pascals (or 'Pa').
-DENSITY : dict
-    Keys are units for density and values are the conversion factor for that unit into kilograms per cubic meter (or
-    'kg/m3').
-ENERGY : dict
-    Keys are units for energy and values are the conversion factor for that unit into joules (or 'J').
+MOLECULAR_WEIGHT : dict
+    Keys are units for molecular weight and values are the conversion factor for that unit into Daltons (or 'g/mol').
 AMOUNT : dict
-    Keys are units for amount of substance and values are the conversion factor for that unit into moles (or 'mol').
+    Keys are units for amount of substance and values are the conversion factor for that unit into moles.
+MASS : dict
+    Keys are units for mass and values are the conversion factor for that unit into kilograms.
+LENGTH : dict
+    Keys are units for length and values are the conversion factor for that unit into meters).
+AREA : dict
+    Keys are units for area and the values are the conversion factor for that unit into square meters.
+VOLUME : dict
+    Keys are units for volume and values are the conversion factor for that unit into cubic meters.
+TEMPERATURE : dict
+    Keys are units for temperature and values are lambda functions (func(x) -> t) which convert that unit into Kelvin.
+FORCE : dict
+    Keys are units for force and values are the conversion factor for that unit into Newtons.
+PRESSURE : dict
+    Keys are units for pressure and values are the conversion factor for that unit into Pascals.
+DENSITY : dict
+    Keys are units for density and values are the conversion factor for that unit into kilograms per cubic meter.
+MOLAR_DENSITY : dict
+    Keys are units for molar density and values are the conversion factor for that unit into moles per cubic meter.
+MOLAR_VOLUME : dict
+    Keys are units for molar volume and values are the conversion factor for that unit into cubic meter per mole.
+ENERGY : dict
+    Keys are units for energy and values are the conversion factor for that unit into Joules.
+HEAT_OF_VAPORIZATION : dict
+    Keys are units for heat of vaporization and values are the conversion factor for that unit into Joules per mole
 HEAT_CAPACITY : dict
-    Keys are units for heat capacity and values are the conversion factor for that unit into 'J/mol.k'
+    Keys are units for heat capacity and values are the conversion factor for that unit into Joules per mole-kelvin.
+VISCOSITY : dict
+    Keys are units for viscosity and values are the conversion factor for that unit into Pascal-second.
+THERMAL_CONDUCTIVITY : dict
+    Keys are units for thermal conductivity and values are the conversion factor for that unit into Watts per
+    meter-Kelvin.
+SURFACE_TENSION : dict
+    Keys are units for surface tension and values are the conversion factor for that unit into Newtons per meter.
+DIMENSIONLESS : dict
+    Key and value represents dimensionless quantities.
+UNITS : dict
+    Combination of all unit conversion dictionaries.  Keys are units and values are the conversion factor for that
+    unit into the corresponding SI unit.
+SI_UNITS : dict
+    Keys are the SI unit for the dictionaries stored as values.
+
 
 Notes
 -----
-Constants and conversion factors taken from Perry's Chemical Engineer's Handbook [1]_.
+Conversion factors taken from Perry's Chemical Engineer's Handbook [1]_.
 
 References
 ----------
 [1] Perry's Chemical Engineers' Handbook; Perry, R. H., Southard, M. Z., Eds.; McGraw-Hill Education: New York, 2019.
 """
 
-R = 8.31446261815324
-EC = 1.602176634*10**-19
-KB = 1.380649*10**-23
-NA = 6.02214076*10**23
-C = 299792458.0
-F = 96485.33212
-PI = 3.14159265358979323846
-E0 = 8.8541878128*10**-12
+# TODO:  Implement as frozen dictionaries.
+MOLECULAR_WEIGHT = {'g/mol': 1.0,
+                    'Da': 1.0}
+
+AMOUNT = {'lbmmol': 453.5924,
+          'stdm3': 44.6158,
+          'stdft3': 1.1953,
+          'kmol': 0.001,
+          'mol': 1.0}
 
 MASS = {'lbm': 0.45359,
         'st': 907.18,
@@ -108,6 +114,7 @@ FORCE = {'lbf': 4.448222,
 PRESSURE = {'psi': 6894.8,
             'atm': 101325.0,
             'mmhg': 133.32,
+            'MPa': 1000000.0,
             'Pa': 1.0}
 
 DENSITY = {'lbm/cuft': 16.01846,
@@ -117,92 +124,111 @@ DENSITY = {'lbm/cuft': 16.01846,
            'kg/m3': 1.0}
 
 MOLAR_DENSITY = {'kmol/m3': 1000.0,
+                 'mol/dm3': 1000.0,
                  'mol/m3': 1.0}
+
+MOLAR_VOLUME = {'m3/kmol': 0.001,
+                'm3/mol': 1.0}
 
 ENERGY = {'Btu': 1054.4,
           'J': 1.0}
 
-AMOUNT = {'lbmmol': 453.5924,
-          'stdm3': 44.6158,
-          'stdft3': 1.1953,
-          'kmol': 0.001,
-          'mol': 1.0}
+HEAT_OF_VAPORIZATION = {'J/kmol': 0.001,
+                        'cal/mol': 4.184,
+                        'kcal/mol': 4184.0,
+                        'J/mol': 1.0}
 
-HEAT_OF_VAPORIZATION = {"J/kmol": 0.001,
-                        "J/mol": 1.0}
-
-HEAT_CAPACITY = {'J/kmol.K': 0.0001,
+HEAT_CAPACITY = {'J/kmol.K': 0.001,
                  'J/mol.K': 1.0}
 
-# Note that temperature is left out of this list because conversion is more than just multiplication by a constant.
-UNITS = [MASS, LENGTH, AREA, VOLUME, FORCE, PRESSURE, DENSITY, MOLAR_DENSITY, ENERGY, AMOUNT,
-         HEAT_OF_VAPORIZATION, HEAT_CAPACITY]
+VISCOSITY = {'Pa.s': 1.0}
 
-SI_UNITS = {'kg': MASS,
+THERMAL_CONDUCTIVITY = {'W/m.K': 1.0}
+
+SURFACE_TENSION = {'mN/m': 0.001,
+                   'dyne/cm': 0.001,
+                   'N/m': 1.0}
+
+DIMENSIONLESS = {'dimensionless': 1.0}
+
+# Temperature is left out of this dictionary because conversion is more than just multiplication by a constant.
+UNITS = {**MOLECULAR_WEIGHT,
+         **AMOUNT,
+         **MASS,
+         **LENGTH,
+         **AREA,
+         **VOLUME,
+         **FORCE,
+         **PRESSURE,
+         **DENSITY,
+         **MOLAR_DENSITY,
+         **MOLAR_VOLUME,
+         **ENERGY,
+         **HEAT_OF_VAPORIZATION,
+         **HEAT_CAPACITY,
+         **VISCOSITY,
+         **THERMAL_CONDUCTIVITY,
+         **SURFACE_TENSION,
+         **DIMENSIONLESS}
+
+SI_UNITS = {'g/mol': MOLECULAR_WEIGHT,
+            'mol': AMOUNT,
+            'kg': MASS,
             'm': LENGTH,
             'm2': AREA,
             'm3': VOLUME,
-            'K': TEMPERATURE,
             'N': FORCE,
             'Pa': PRESSURE,
+            'K': TEMPERATURE,
             'kg/m3': DENSITY,
             'mol/m3': MOLAR_DENSITY,
+            'm3/mol': MOLAR_VOLUME,
             'J': ENERGY,
-            'mol': AMOUNT,
             'J/mol': HEAT_OF_VAPORIZATION,
-            'J/mol.K': HEAT_CAPACITY}
+            'J/mol.K': HEAT_CAPACITY,
+            'Pa.s': VISCOSITY,
+            'W/m.K': THERMAL_CONDUCTIVITY,
+            'N/m': SURFACE_TENSION,
+            'dimensionless': DIMENSIONLESS}
 
 
-def conv_to_si(value, unit):
-    """Convert input to corresponding SI unit.
-
-    Handles cases where units are converted by scalar multiplication (i.e. everything but temperature conversion).
+def to_si(value: float, unit: str) -> float:
+    """Convert input value to corresponding SI value.
 
     Parameters
     ----------
-    value : float, list of float, or tuple of float
-        Input value(s) to be converted to corresponding SI unit.
+    value : float
+        Input value to be converted to corresponding SI value.
     unit : str
-        Unit of the input value.
+        Unit of input value.
 
     Returns
     -------
-    float, list of float, or tuple of float
-        Value(s) converted to corresponding SI unit.
+    float
+        Value converted to corresponding SI unit.
     """
-    if isinstance(value, float):
-        for conv_dict in UNITS:
-            if unit in conv_dict:
-                return value * conv_dict[unit]
-        raise ValueError("unit is not defined.")
-    elif isinstance(value, (list, tuple)) and all(isinstance(x, float) for x in value):
-        for conv_dict in UNITS:
-            if unit in conv_dict:
-                return [x * conv_dict[unit] for x in value]
-        raise ValueError("input_unit is not defined.")
+    if unit in UNITS:
+        return value * UNITS[unit]
+    elif unit in TEMPERATURE:
+        return TEMPERATURE[unit](value)
     else:
-        raise TypeError("input must be a float, list of floats, or tuple of floats.")
+        raise ValueError("unit is not defined.")
 
 
-def si_unit(conv_dict=None):
-    """Find the SI unit for a given unit conversion dictionary.
+def to_si_unit(unit: str) -> str:
+    """Convert input value to corresponding SI value.
 
     Parameters
     ----------
-    conv_dict : dict
-        Unit conversion dictionary (keys are units and values are conversion factors for the corresponding SI unit).
+    unit : str
+        Input unit to be converted to corresponding SI unit
 
     Returns
     -------
-    str
-        SI unit corresponding to input unit conversion dictionary.
+    float
+        Value converted to corresponding SI unit.
     """
-    if not isinstance(conv_dict, dict):
-        return TypeError("conv_dict must be a dictionary.")
-    elif conv_dict not in UNITS:
-        return ValueError("conv_dict must be a pre-defined unit conversion dictionary.")
-    else:
-        for key, value in SI_UNITS.items():
-            if value == conv_dict:
-                return key
-        return RuntimeError("conv_dict does not have a defined SI value.")
+    for si_unit, unit_dict in SI_UNITS.items():
+        if unit in unit_dict:
+            return si_unit
+    raise ValueError("unit is not defined.")
