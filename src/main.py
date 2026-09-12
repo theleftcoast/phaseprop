@@ -43,11 +43,11 @@ calculations for water–methanol–alkane mixtures. Fluid Phase Equilib. 1999, 
 import numpy as np
 from scipy.optimize import minimize
 import copy
-from units import *
-from utilities import *
-from comps import *
-from eos import *
-from assoc import *
+from src.units import *
+from src.utilities import *
+from src.comps import *
+from src.eos import *
+from src.assoc import *
 
 # TODO: Check that value errors and type errors are raised consistently.
 # TODO: Consider eliminating pre-defined EOS in favor of identification using spec objects instead.
