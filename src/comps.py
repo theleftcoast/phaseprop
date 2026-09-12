@@ -1,992 +1,1497 @@
-"""Objects representing pure chemical components and pseudo-components.
-
-Attributes
-----------
-COMP_FAM : list
-    Pre-defined component family pick list based on definitions in _[1] and _[2].
-
-Notes
------
-
-
-References
-----------
-[1] Perry's Chemical Engineers' Handbook; Perry, R. H., Southard, M. Z., Eds.; McGraw-Hill Education: New York, 2019.
-[2] Tihic, A.; Kontogeorgis, G. M.; von Solms, N.;Michelsen, M. L. Applications of the simplified perturbed-chain SAFT
-equation of state using an extended parameter table. Fluid Phase Equilib. 2006, 248, 29-43.
-"""
-
-COMP_FAM = ['Alkanes', 'Alkenes', 'Alkynes', 'Cycloalkanes' 'Aromatics', 'Polynuclear Aromatics', 'Aldehydes',
-            'Ketones', 'Heterocyclics', 'Elements', 'Alcohols', 'Phenols', 'Ethers', 'Acids', 'Esters', 'Amines',
-            'Amides', 'Nitriles', 'Nitro Compounds', 'Isocyanates', 'Mercaptans', 'Sulfides',
-            'Halogenated Hydrocarbons', 'Silanes', 'Inorganics', 'Multifunctional']
-
+"""Objects representing pure chemical components and pseudo-components."""
 import numpy as np
-from src.utilities import *
+import dataclasses
+import typing
+import utility
+import refs
+import units
+import const
 
 
+@dataclasses.dataclass(frozen=True, eq=True)
 class Comp(object):
-    """A pure chemical component."""
-    def __init__(self, name=None):
-        """
-        Parameters
-        ----------
-        name : str
-        """
-        # General Attributes
-        if name is None:
-            raise ValueError("Comp object must be initialized with a name and molecular weight.")
-        else:
-            # Metadata and constants.
-            self.name = name
-            self.cas_no = None
-            self.formula = None
-            self.family = None
-            self.mw = None
-            self.vdwv = None
-            self.vdwa = None
-            self.rgyr = None
-            self.dipole = None
-            self.quadrupole = None
-            self.acentric = None
-            self.tc = None
-            self.pc = None
-            self.vc = None
-            self.rhoc = None
-            self.tt = None
-            self.pt = None
-            self.bp = None
-            self.mp = None
-            self.hfus = None
-            self.hsub = None
-            self.ig_hform = None
-            self.ig_gform = None
-            self.ig_entr = None
-            self.hcomb = None
-
-            # Temperature dependent properties.
-            self.pvap_l = None
-            self.hvap_l = None
-            self.den_s = None
-            self.den_l = None
-            self.beta_s = None
-            self.beta_l = None
-            self.cp_s = None
-            self.cp_l = None
-            self.cp_ig = None
-            self.visc_l = None
-            self.visc_ig = None
-            self.tcond_s = None
-            self.tcond_l = None
-            self.tcond_ig = None
-            self.sigma = None
-
-            # TODO: Ensure CEOS physical terms are built with getter/setter checks for CEOS objects.
-            # Cubic EOS physical parameter dictionaries.
-            self.srk_phys = {'a': None, 'b': None, 'm': None}
-            self.cpa_phys = {'a0': None, 'b': None, 'c1': None}
-            self.pr_phys = {'a': None, 'b': None, 'm': None}
-            self.gpr_phys = {'a': None, 'b': None, 'a': None, 'b': None, 'c': None}
-            self.tpr_phys = {'a': None, 'b': None, 'l': None, 'm': None, 'n': None}
-
-            # SAFT EOS physical parameter dictionaries.
-            self.spc_saft_phys = {'m': None, 'sig': None, 'eps': None}
-            self.pc_saft_phys = {'m': None, 'sig': None, 'eps': None}
-
-            # SAFT EOS association parameter objects.
-            self.assoc_sites = None
-            self.cpa_assoc = None
-            self.spc_saft_assoc = None
-            self.pc_saft_assoc = None
-
-    @property
-    def name(self):
-        """str : Name of chemical compound.
-
-        Value can only be set whe creating a new Comp instance.
-        """
-        return self._name
-
-    @name.setter
-    def name(self, value):
-        try:
-            self._name
-        except AttributeError:
-            if isinstance(value, str):
-                self._name = value
-            else:
-                raise TypeError("name must be a string.")
-
-    @property
-    def cas_no(self):
-        """str: Chemical Abstracts Service Registry Number."""
-        return self._cas_no
-
-    @cas_no.setter
-    def cas_no(self, value):
-        if isinstance(value, str) or value is None:
-            self._cas_no = value
-        else:
-            raise TypeError("cas_no must be a string.")
-
-    @property
-    def formula(self):
-        """str : Chemical formula."""
-        return self._formula
-
-    @formula.setter
-    def formula(self, value):
-        if isinstance(value, str) or value is None:
-            self._formula = value
-        else:
-            raise TypeError("formula must be a string.")
-
-    @property
-    def family(self):
-        """str : Chemical family."""
-        return self._family
-
-    @family.setter
-    def family(self, value):
-        if isinstance(value, str) or value is None:
-            if value in COMP_FAM or value is None:
-                self._family = value
-            else:
-                raise ValueError("family must be one of the pre-defined values.")
-        else:
-            raise TypeError("family must be a string.")
-
-    @property
-    def mw(self):
-        """float : Molecular weight, g/mol."""
-        return self._mw
-
-    @mw.setter
-    def mw(self, value):
-        if (isinstance(value, float) and value >= 0.0) or value is None:
-            self._mw = value
-        else:
-            raise TypeError("mw must be a positive float.")
-
-    @property
-    def vdwv(self):
-        """float : Van der Waal's volume, unit TBD."""
-        return self._vdwv
-
-    @vdwv.setter
-    def vdwv(self, value):
-        if (isinstance(value, float) and value >= 0.0) or value is None:
-            self._vdwv = value
-        else:
-            raise TypeError("vdwv must be a positive float.")
-
-    @property
-    def vdwa(self):
-        """float : Van der Waal's surface area, unit TBD."""
-        return self._vdwa
-
-    @vdwa.setter
-    def vdwa(self, value):
-        if (isinstance(value, float) and value >= 0.0) or value is None:
-            self._vdwa = value
-        else:
-            raise TypeError("vdwa must be a positive float.")
-
-    @property
-    def rgyr(self):
-        """float : Radius of gyration, unit TBD."""
-        return self._rgyr
-
-    @rgyr.setter
-    def rgyr(self, value):
-        if (isinstance(value, float) and value >= 0.0) or value is None:
-            self._rgyr = value
-        else:
-            raise TypeError("rgyr must be a positive float.")
-
-    @property
-    def dipole(self):
-        """float : Gas phase dipole moment, unit TBD."""
-        return self._dipole
-
-    @dipole.setter
-    def dipole(self, value):
-        if (isinstance(value, float) and value >= 0.0) or value is None:
-            self._dipole = value
-        else:
-            raise TypeError("dipole must be a positive float.")
-
-    @property
-    def quadrupole(self):
-        """float : Gas phase quadrupole moment, unit TBD."""
-        return self._quadrupole
-
-    @quadrupole.setter
-    def quadrupole(self, value):
-        if (isinstance(value, float) and value >= 0.0) or value is None:
-            self._quadrupole = value
-        else:
-            raise TypeError("quadrupole must be a positive float.")
-
-    @property
-    def acentric(self):
-        """float : Acentric factor, dimensionless."""
-        return self._acentric
-
-    @acentric.setter
-    def acentric(self, value):
-        if isinstance(value, float) or value is None:
-            self._acentric = value
-        else:
-            raise TypeError("acentric must be a float.")
-
-    @property
-    def tc(self):
-        """float : Critical temperature, K."""
-        return self._tc
-
-    @tc.setter
-    def tc(self, value):
-        if (isinstance(value, float) and value >= 0.0) or value is None:
-            self._tc = value
-        else:
-            raise TypeError("tc must be a positive float.")
-
-    @property
-    def pc(self):
-        """float : Critical pressure, Pa."""
-        return self._pc
-
-    @pc.setter
-    def pc(self, value):
-        if (isinstance(value, float) and value >= 0.0) or value is None:
-            self._pc = value
-        else:
-            raise TypeError("pc must be a positive float.")
-
-    @property
-    def vc(self):
-        """float : Critical volume, m**3/mol."""
-        return self._vc
-
-    @vc.setter
-    def vc(self, value):
-        if (isinstance(value, float) and value >= 0.0) or value is None:
-            self._vc = value
-        else:
-            raise TypeError("vc must be a positive float.")
-
-    @property
-    def rhoc(self):
-        """float : Critical density, mol/m**3"""
-        return self._rhoc
-
-    @rhoc.setter
-    def rhoc(self, value):
-        if (isinstance(value, float) and value >= 0.0) or value is None:
-            self._rhoc = value
-        else:
-            raise TypeError("rhoc must be a positive float.")
-
-    @property
-    def tt(self):
-        """float : Triple point temperature, K."""
-        return self._tt
-
-    @tt.setter
-    def tt(self, value):
-        if (isinstance(value, float) and value >= 0.0) or value is None:
-            self._tt = value
-        else:
-            raise TypeError("tt must be a positive float.")
-
-    @property
-    def pt(self):
-        """float : Triple point pressure, Pa."""
-        return self._pt
-
-    @pt.setter
-    def pt(self, value):
-        if (isinstance(value, float) and value >= 0.0) or value is None:
-            self._pt = value
-        else:
-            raise TypeError("pt must be a positive float.")
-
-    @property
-    def bp(self):
-        """float : Boiling point, K."""
-        return self._bp
-
-    @bp.setter
-    def bp(self, value):
-        if (isinstance(value, float) and value >= 0.0) or value is None:
-            self._bp = value
-        else:
-            raise TypeError("bp must be a positive float.")
-
-    @property
-    def mp(self):
-        """float : Melting point, K."""
-        return self._mp
-
-    @mp.setter
-    def mp(self, value):
-        if (isinstance(value, float) and value >= 0.0) or value is None:
-            self._mp = value
-        else:
-            raise TypeError("mp must be a positive float.")
-
-    @property
-    def hfus(self):
-        """float : Enthalpy of solid-liquid fusion, J/mol."""
-        return self._hfus
-
-    @hfus.setter
-    def hfus(self, value):
-        if isinstance(value, float) or value is None:
-            self._hfus = value
-        else:
-            raise TypeError("hfus must be a float.")
-
-    @property
-    def hsub(self):
-        """float : Enthalpy of sublimation, J/mol."""
-        return self._hsub
-
-    @hsub.setter
-    def hsub(self, value):
-        if isinstance(value, float) or value is None:
-            self._hsub = value
-        else:
-            raise TypeError("hsub must be a float.")
-
-    @property
-    def ig_hform(self):
-        """float : Ideal gas enthalpy of formation at 298.15, unit TBD.
-
-        The compounds are considered to be formed from the elements in their standard states at 298.15K and 1 bar.
-        These include  C (graphite) and S (rhombic).
-        """
-        return self._ig_hform
-
-    @ig_hform.setter
-    def ig_hform(self, value):
-        if isinstance(value, float) or value is None:
-            self._ig_hform = value
-        else:
-            raise TypeError("ig_hform must be a float.")
-
-    @property
-    def ig_gform(self):
-        """float : Ideal gas gibbs energy of formation at 298.15, unit TBD."""
-        return self._ig_gform
-
-    @ig_gform.setter
-    def ig_gform(self, value):
-        if isinstance(value, float) or value is None:
-            self._ig_gform = value
-        else:
-            raise TypeError("ig_gform must be a float.")
-
-    @property
-    def ig_entr(self):
-        """float : Ideal gas gibbs entropy, unit TBD."""
-        return self._ig_entr
-
-    @ig_entr.setter
-    def ig_entr(self, value):
-        if isinstance(value, float) or value is None:
-            self._ig_entr = value
-        else:
-            raise TypeError("ig_entr must be a float.")
-
-    @property
-    def hcomb(self):
-        """float : Standard net enthalpy of combustion, unit TBD.
-
-        Enthalpy of combustion is the net value for the compound in its standard state at 298.15K and 1 bar.  Products
-        of combustion are taken to be CO2 (gas), H2O (gas), F2 (gas), Cl2 (gas), Br2 (gas), I2 (gas), SO2 (gas), N2
-        (gas), P4O10 (crystalline), SiO2 (crystobalite), and Al2O3 (crystal, alpha).
-        """
-        return self._hcomb
-
-    @hcomb.setter
-    def hcomb(self, value):
-        if isinstance(value, float) or value is None:
-            self._hcomb = value
-        else:
-            raise TypeError("hcomb must be a float.")
-
-    @property
-    def pvap_l(self):
-        """float : Liquid vapor pressure, Pa."""
-        return self._pvap_l
-
-    @pvap_l.setter
-    def pvap_l(self, value):
-        if isinstance(value, Corel) or value is None:
-            self._pvap_l = value
-        else:
-            raise TypeError("pvap_l must be an instance of Corel.")
-
-    @property
-    def hvap_l(self):
-        """float : Enthalpy of saturated liquid vaporization, J/mol."""
-        return self._hvap_l
-
-    @hvap_l.setter
-    def hvap_l(self, value):
-        if isinstance(value, Corel) or value is None:
-            self._hvap_l = value
-        else:
-            raise TypeError("hvap_l must be an instance of Corel.")
-
-    @property
-    def den_s(self):
-        """float : Solid density, kg/m3 or mol/m3."""
-        return self._den_s
-
-    @den_s.setter
-    def den_s(self, value):
-        if isinstance(value, Corel) or value is None:
-            self._den_s = value
-        else:
-            raise TypeError("den_S must be an instance of Corel.")
-
-    @property
-    def den_l(self):
-        """float : Liquid density, kg/m3 or mol/m3."""
-        return self._den_l
-
-    @den_l.setter
-    def den_l(self, value):
-        if isinstance(value, Corel) or value is None:
-            self._den_l = value
-        else:
-            raise TypeError("den_l must be an instance of Corel.")
-
-    @property
-    def beta_s(self):
-        """float : Isothermal solid compressibility, Unit TBD.
-
-        beta = -(1/V)*(dV/dP) = (1/rho)*(drho/dP), sign change due to conversion from V to rho with chain rule."""
-        return self._beta_s
-
-    @beta_s.setter
-    def beta_s(self, value):
-        if isinstance(value, Corel) or value is None:
-            self._beta_s = value
-        else:
-            raise TypeError("beta_s must be an instance of Corel.")
-
-    @property
-    def beta_l(self):
-        """float : Isothermal liquid compressibility, Unit TBD.
-
-        beta = -(1/V)*(dV/dP) = (1/rho)*(drho/dP), sign change due to conversion from V to rho with chain rule."""
-        return self._beta_l
-
-    @beta_l.setter
-    def beta_l(self, value):
-        if isinstance(value, Corel) or value is None:
-            self._beta_l = value
-        else:
-            raise TypeError("beta_l must be an instance of Corel.")
-
-    @property
-    def cp_s(self):
-        """float : Solid heat capacity, J/mol.K."""
-        return self._cp_s
-
-    @cp_s.setter
-    def cp_s(self, value):
-        if isinstance(value, Corel) or value is None:
-            self._cp_s = value
-        else:
-            raise TypeError("cp_s must be an instance of Corel.")
-
-    @property
-    def cp_l(self):
-        """float : Saturated liquid heat capacity, J/mol.K."""
-        return self._cp_l
-
-    @cp_l.setter
-    def cp_l(self, value):
-        if isinstance(value, Corel) or value is None:
-            self._cp_l = value
-        else:
-            raise TypeError("cp_l must be an instance of Corel.")
-
-    @property
-    def cp_ig(self):
-        """float : Ideal gas heat capacity, J/mol.K."""
-        return self._cp_ig
-
-    @cp_ig.setter
-    def cp_ig(self, value):
-        if isinstance(value, Corel) or value is None:
-            self._cp_ig = value
-        else:
-            raise TypeError("cp_ig must be an instance of Corel.")
-
-    @property
-    def visc_l(self):
-        """float : Saturated liquid viscosity, unit TBD."""
-        return self._visc_l
-
-    @visc_l.setter
-    def visc_l(self, value):
-        if isinstance(value, Corel) or value is None:
-            self._visc_l = value
-        else:
-            raise TypeError("visc_l must be an instance of Corel.")
-
-    @property
-    def visc_ig(self):
-        """float : Ideal gas viscosity, unit TBD."""
-        return self._visc_ig
-
-    @visc_ig.setter
-    def visc_ig(self, value):
-        if isinstance(value, Corel) or value is None:
-            self._visc_ig = value
-        else:
-            raise TypeError("visc_ig must be an instance of Corel.")
-
-    @property
-    def tcond_s(self):
-        """float : Solid thermal conductivity, unit TBD."""
-
-    @tcond_s.setter
-    def tcond_s(self, value):
-        if isinstance(value, Corel) or value is None:
-            self._tcond_s = value
-        else:
-            raise TypeError("tcond_s must be an instance of Corel.")
-
-    @property
-    def tcond_l(self):
-        """float : Saturated liquid thermal conductivity, unit TBD."""
-        return self._tcond_l
-
-    @tcond_l.setter
-    def tcond_l(self, value):
-        if isinstance(value, Corel) or value is None:
-            self._tcond_l = value
-        else:
-            raise TypeError("tcond_l must be an instance of Corel.")
-
-    @property
-    def tcond_ig(self):
-        """float : Ideal gas thermal conductivity, unit TBD."""
-        return self._tcond_ig
-
-    @tcond_ig.setter
-    def tcond_ig(self, value):
-        if isinstance(value, Corel) or value is None:
-            self._tcond_ig = value
-        else:
-            raise TypeError("tcond_ig must be an instance of Corel.")
-
-    @property
-    def sigma(self):
-        """float : Surface tension, unit TBD."""
-        return self._sigma
-
-    @sigma.setter
-    def sigma(self, value):
-        if isinstance(value, Corel) or value is None:
-            self._sigma = value
-        else:
-            raise TypeError("sigma must be an instance of Corel.")
-
-    def k_wilson(self, p=None, t=None):
-        """Wilson's equilibrium ratio (Ki = yi / xi).
-
-        Parameters
-        ----------
-        p : float
-            Pressure, Pa.
-        t : float
-            Temperature, K.
-
-        Returns
-        -------
-        float
-            Wilson's K-factor.
-        """
-        if isinstance(p, float) and isinstance(t, float) and p > 0.0 and t > 0.0:
-            return (self._pc / p) * np.exp(5.37 * (1.0 + self._acentric) * (1.0 - self._tc / t))
-        else:
-            raise RuntimeError("p and t must both be positive floats.")
-
-    def melting_curve(self, t=None):
-        """Melting curve for a pure solid.
-
-        Melting pressure can be estimated with the Clausius-Clapeyron equation. A very simple approach assumes that
-        changes in the enthalpy of fusion, liquid molar volume, and solid molar volume are negligible over the
-        temperature range of interest.  With these assumptions, the equation of the melting curve is as follows:
-
-        dp/dt = delta_h / (t * delta_v)
-
-        p - p0 = (delta_h / delta_v) * ln(t / t0)
-
-        Variation of the enthalpy of fusion with temperature is related to differences in heat capacity between phases.
-
-        ddelta_h/dt = dh_l/dt - dh_s/dt = cp_l - cp_s = detla_cp
-
-        delta_h = integral_from_t0_to_t(delta_cp * dt) + delta_h0
-
-        Temperature dependence of the heat capacity difference is usually weak and can be neglected.
-
-        delta_h = delta_cp * (t - t0) + delta_h0
-
-        Liquid and solid heat capacities can be evaluated at the melting temperature. These values are be derived from
-        cp_l(t) and cp_s(t) correlations OR it can be entered as a constant (a useful adjustable parameter for
-        correlating melting curves, sublimation curves, and solubility. The equation of the melting curve is as follows:
-
-        p - p0 = (delta_cp / delta_v) * (t - t0) + ((delta_h - t0 * delta_cp) / delta_v) * ln(t / t0)
-
-        Parameters
-        ----------
-        t : float
-            Temperature specification, K.
-
-        Returns
-        -------
-        float
-            Melting pressure, Pa.
-
-        References
-        ----------
-        [1] Tosun, I. The thermodynamics of phase and reaction equilibria, 1st ed., Elsevier: Amsterdam, 2013.
-        [2] Poling, B. E.; Praunitz, J. M.; O'Connell, J. P. The properties of gases and liquids, 5th ed.,
-        McGraw-Hill, 2000.
-        [3] Pappa, G. D.; Voutsas, E. C.; Magoulas, K.; Tassios, D. P. Estimation of the differential molar heat
-        capacities of organic compounds at their melting point. Ind. Eng. Chem. Res. 2005, 44, 3799–3806.
-        """
-        if isinstance(t, float) and t > 0.0:
-            if self._hfus and self._mp and self._den_l and self._den_s:
-                p0 = 101325.0
-                t0 = self._mp
-                tavg = (t + t0) / 2.0
-                v_l = 1.0 / self._den_l(tavg)
-                v_s = 1.0 / self._den_s(tavg)
-                delta_v = v_l - v_s
-                if self._cp_l and self._cp_s:
-                    delta_cp = self._cp_l(tavg) - self._cp_s(tavg)
-                    return p0 + (delta_cp/delta_v) * (t - t0) + ((self._hfus - t0 * delta_cp)/delta_v) * np.log(t/t0)
-                else:
-                    return p0 + (self._hfus/delta_v) * np.log(t/t0)
-            else:
-                raise RuntimeError("Enthalpy of fusion at melting point, liquid density, and solid density required.")
-        else:
-            raise RuntimeError("t must be a positive float.")
-
-    def sublimation_curve(self):
-        """Sublimation curve for a pure solid.
-
-        Sublimation pressure can be estimated with the Clausius-Clapeyron equation. A very simple approach assumes that
-        changes in the enthalpy of sublimation and solid molar volume are negligible over the temperature range of
-        interest.  With these assumptions, the equation of the melting curve is as follows:
-
-        dp/dt = delta_h / (t * delta_v)
-
-        delta_h_sub = delta_h_vap + delta_h_fusion
-
-        delta_v = v_v - v_s ~ v_v = R*t/p_sub
-
-        p - p0 = (delta_h / delta_v) * ln(t / t0)
-
-        Parameters
-        ----------
-        t : float
-            Temperature specification, K.
-
-        Returns
-        -------
-        float
-            Sublimation pressure, Pa.
-
-        References
-        ----------
-        [1] Tosun, I. The thermodynamics of phase and reaction equilibria, 1st ed., Elsevier: Amsterdam, 2013.
-        [2] Poling, B. E.; Praunitz, J. M.; O'Connell, J. P. The properties of gases and liquids, 5th ed.,
-        McGraw-Hill, 2000.
-        [3] Pappa, G. D.; Voutsas, E. C.; Magoulas, K.; Tassios, D. P. Estimation of the differential molar heat
-        capacities of organic compounds at their melting point. Ind. Eng. Chem. Res. 2005, 44, 3799–3806.
-        """
-        return
-
-    def density(self, t=None, p=None, phase='l', spec='molar'):
-        """Pure component liquid and/or solid density estimation.
-
-        This function evaluates liquid or solid densities at pressures deviating from the vapor pressure curve or
-        melting curve. The first step is calculating an initial density along the vapor pressure curve or melting curve.
-        The next step is to correct for pressure with the isothermal compressibility:
-
-        rho = rho_0 * exp(beta * (p - p_0))
-
-        In this expression, rho_0 and p_0 are the saturation or melting density.  If pressure is not specified, then the
-        saturated liquid or melting point solid density is returned. IF
-
-        Parameters
-        ----------
-        p : float
-            Pressure, Pa.
-        t : float
-            Temperature, K.
-        spec : str
-            Phase specification (either 'mass' or 'molar').
-
-        Returns
-        -------
-        float or None
-            Density of saturated liquid or melting point solid. None returned if 't' is outside correlation temp limits.
-        float or None
-            Density of solid phase at temperature 't' (None if no solid density correlation available).
-        str
-            Unit ('kg/m3' or 'mol/m3').
-        """
-        if not isinstance(p, (float, None)):
-            raise TypeError("p must be None or a positive float.")
-        elif not isinstance(t, float) and p > 0.0:
-            raise TypeError("t must be a positive float.")
-        elif phase not in ['l', 's']:
-            raise ValueError("phase must be either 'l' or 's'.")
-        elif spec not in ['mass', 'molar']:
-            raise ValueError("spec must be either 'molar' or 'mass'.")
-        else:
-            if self._beta_l and p:
-                p_corr_l = np.exp(self._beta_l(t) * ())
-            else:
-                beta_l = 0.0
-
-            if self._beta_s:
-                beta_s = self._beta_s(t)
-            else:
-                beta_s = 0.0
-
-        if self._den_l and not self._den_s:
-            # Liquid density correlation exists, solid density correlation does not.
-            if spec == 'molar':
-                if self._den_l.unit == 'kg/m3':
-                    return self._den_l(t) * 1000.0 / self._mw
-                elif self._den_l.unit == 'mol/m3':
-                    return self._den_l(t)
-                else:
-                    raise RuntimeError("liquid density correlation does not have a valid unit.")
-            elif spec == 'mass':
-                return
-            else:
-                raise ValueError("spec is not valid.")
-        elif not self._den_l and self._den_s:
-            # Liquid density correlation does not exist, solid density correlation exists.
-            if spec == 'molar':
-                return
-            elif spec == 'mass':
-                return
-            else:
-                raise ValueError("spec is not valid.")
-        elif self._den_l and self._den_s:
-            # Liquid density and solid density correlations exist.
-            if spec == 'molar':
-                return
-            elif spec == 'mass':
-                return
-            else:
-                raise ValueError("spec is not valid.")
-        else:
-            raise RuntimeError("liquid and solid density correlations not loaded for Comp.")
-
-    # TODO: Improve interface by making these checks part of getter/setter methods?
-    def _check_assoc_sites(self):
-        # Check to ensure there are no duplicate association sites.
-        if self.assoc_sites is not None:
-            if not isinstance(self.assoc_sites, (list, tuple)):
-                raise TypeError("Comp objects must be a list of unique assoc_site objects.")
-            elif len(self.assoc_sites) != len(set(self.assoc_sites)):
-                raise ValueError("Comp objects must be a list of unique assoc_site objects.")
-            else:
-                pass
-
-    def _check_assoc_parameters(self):
-        # Check to ensure association parameter are lists of AssocSiteInter objects.
-        if self.assoc_sites is not None:
-            if self.cpa_assoc is not None:
-                for asi in self.cpa_assoc:
-                    if not isinstance(asi, AssocSiteInter):
-                        raise TypeError("Association parameter lists must contain AssocSiteInter objects.")
-
-    def __eq__(self, other):
-        if isinstance(other, Comp):
-            name_eq = self.name == other.name
-            return name_eq
-        return False
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def __hash__(self):
-        return hash(self.name)
-
-    def __str__(self):
-        return "Name: {}, CAS No.: {}".format(self.name, self.cas_no)
-
-
-class PseudoComp(object):
-    """A pseudo-component (polymer, distillation cut, asphaltene, etc.).
-
-    Notes
-    -----
-    # TODO: Improve agreement bewteeen Comp and PseudoComp classes. Currently a skeleton implementation.
-    # TODO: Add Riazi correlations to estimate Tc, Pc, Vc, Rhoc from mw, sg, NBP.
+    """A pure chemical component.
+
+    Attributes
+    ----------
+    name : str
+        Name of chemical compound.
+    cas_no : str, optional
+        Chemical Abstracts Service Registry Number.
+    formula : str, optional
+        Chemical formula.
+    mw : float or utility.Const, optional
+        Molecular weight.
+    vdwv : float or utility.Const, optional
+        Van der Waal's volume.
+    vdwa : float or utility.Const, optional
+        Van der Waal's volume surface area.
+    rgyr : float or utility.Const, optional
+        Radius of gyration.
+    dipole : float or utility.Const, optional
+        Gas phase dipole moment.
+    quadrupole : float or utility.Const, optional
+        Gas phase quadrupole moment.
+    acentric : float or utility.Const, optional
+        Acentric factor.
+    tc : float or utility.Const, optional
+        Critical temperature.
+    pc : float or utility.Const, optional
+        Critical pressure.
+    vc : float or utility.Const, optional
+        Critical volume.
+    zc : float
+        Critical compressibility.
+    rhoc : float or utility.Const, optional
+        Critical density.
+    tt : float or utility.Const, optional
+        Triple point temperature.
+    pt : float or utility.Const, optional
+        Triple point pressure.
+    bp : float or utility.Const, optional
+        Boiling point.
+    mp : float or utility.Const, optional
+        Melting point.
+    hfus : float or utility.Const, optional
+        Enthalpy of fusion.
+    hsub : float or utility.Const, optional
+        Enthalpy of sublimation.
+    ig_hform : float or utility.Const, optional
+        Ideal gas enthalpy of formation.
+    ig_gform : float or utility.Const, optional
+        Ideal gas Gibbs energy of formation.
+    ig_entr : float or utility.Const, optional
+        Ideal gas entropy.
+    hcomb : float or utility.Const, optional
+        Enthalpy of combustion.
+    pvap_l : utility.ReidelPvap, optional
+        Saturated liquid vapor pressure.
+    hvap_l : utility.PerryHvap, optional
+        Enthalpy of vaporization.
+    den_l : utility.DaubertDenL or utility.IAPWSDenL, optional
+        Saturated liquid density.
+    cp_l : utility.PolyCpL or utility.DIPPRCpL, optional
+        Saturated liquid heat capacity.
+    cp_ig : utility.AlyLeeCpIg or utility.PolyCpIg, optional
+        Ideal gas heat capacity.
+    visc_l : utility.AndradeViscL, optional
+        Saturated liquid viscosity.
+    visc_ig : utility.KineticViscIg, optional
+        Ideal gas viscosity.
+    tcond_l : utility.PolyTcondL, optional
+        Saturated liquid thermal conductivity.
+    tcond_ig : utility.KineticTcondIg or utility.PolyTcondIg, optional
+        Ideal gas thermal conductivity.
+    surf_ten : utility.SurfTen, optional
+        Surface tension.
     """
 
-    def __init__(self, name):
-        """
-        Parameters
-        ----------
-        name : str
-        """
-        # General Attributes
-        self.name = name
-        self.mw = None
-        self.sg = None
-        self.nbp = None
-        self.acentric = None
-        self.tc = None
-        self.pc = None
-        self.vc = None
-        self.rhoc = None
+    # Metadata and constants.
+    name: str
+    cas_no: typing.Optional[str] = dataclasses.field(default=None, repr=False)
+    formula: typing.Optional[str] = dataclasses.field(default=None, repr=False)
+    mw: typing.Optional[typing.Union[float, utility.Const]] = dataclasses.field(default=None, repr=False)
+    vdwv: typing.Optional[typing.Union[float, utility.Const]] = dataclasses.field(default=None, repr=False)
+    vdwa: typing.Optional[typing.Union[float, utility.Const]] = dataclasses.field(default=None, repr=False)
+    rgyr: typing.Optional[typing.Union[float, utility.Const]] = dataclasses.field(default=None, repr=False)
+    dipole: typing.Optional[typing.Union[float, utility.Const]] = dataclasses.field(default=None, repr=False)
+    quadrupole: typing.Optional[typing.Union[float, utility.Const]] = dataclasses.field(default=None, repr=False)
+    acentric: typing.Optional[typing.Union[float, utility.Const]] = dataclasses.field(default=None, repr=False)
+    tc: typing.Optional[typing.Union[float, utility.Const]] = dataclasses.field(default=None, repr=False)
+    pc: typing.Optional[typing.Union[float, utility.Const]] = dataclasses.field(default=None, repr=False)
+    vc: typing.Optional[typing.Union[float, utility.Const]] = dataclasses.field(default=None, repr=False)
+    rhoc: typing.Optional[typing.Union[float, utility.Const]] = dataclasses.field(default=None, repr=False)
+    tt: typing.Optional[typing.Union[float, utility.Const]] = dataclasses.field(default=None, repr=False)
+    pt: typing.Optional[typing.Union[float, utility.Const]] = dataclasses.field(default=None, repr=False)
+    bp: typing.Optional[typing.Union[float, utility.Const]] = dataclasses.field(default=None, repr=False)
+    mp: typing.Optional[typing.Union[float, utility.Const]] = dataclasses.field(default=None, repr=False)
+    hfus: typing.Optional[typing.Union[float, utility.Const]] = dataclasses.field(default=None, repr=False)
+    hsub: typing.Optional[typing.Union[float, utility.Const]] = dataclasses.field(default=None, repr=False)
+    ig_hform: typing.Optional[typing.Union[float, utility.Const]] = dataclasses.field(default=None, repr=False)
+    ig_gform: typing.Optional[typing.Union[float, utility.Const]] = dataclasses.field(default=None, repr=False)
+    ig_entr: typing.Optional[typing.Union[float, utility.Const]] = dataclasses.field(default=None, repr=False)
+    hcomb: typing.Optional[typing.Union[float, utility.Const]] = dataclasses.field(default=None, repr=False)
 
-        # EOS Physical Attributes
-        self.srk_phys = None
-        self.pr_phys = None
-        self.gpr_phys = None
-        self.cpa_phys = None
-        self.spc_saft_phys = None
-
-        # EOS Association Attributes
-        self.assoc_sites = None
-        self.cpa_assoc = None
-        self.spc_saft_assoc = None
+    # Temperature dependent properties.
+    pvap_l: typing.Optional[utility.RiedelPvap] = dataclasses.field(default=None, repr=False)
+    hvap_l: typing.Optional[utility.PerryHvap] = dataclasses.field(default=None, repr=False)
+    den_l: typing.Optional[typing.Union[utility.DaubertDenL,
+                                        utility.IAPWSDenL]] = dataclasses.field(default=None, repr=False)
+    cp_l: typing.Optional[typing.Union[utility.PolyCpL,
+                                       utility.DIPPRCpL]] = dataclasses.field(default=None, repr=False)
+    cp_ig: typing.Optional[typing.Union[utility.AlyLeeCpIg,
+                                        utility.PolyCpIg]] = dataclasses.field(default=None, repr=False)
+    visc_l: typing.Optional[utility.AndradeViscL] = dataclasses.field(default=None, repr=False)
+    visc_ig: typing.Optional[utility.KineticViscIg] = dataclasses.field(default=None, repr=False)
+    tcond_l: typing.Optional[utility.PolyTcondL] = dataclasses.field(default=None, repr=False)
+    tcond_ig: typing.Optional[typing.Union[utility.KineticTcondIg,
+                                           utility.PolyTcondIg]] = dataclasses.field(default=None, repr=False)
+    surf_ten: typing.Optional[utility.SurfTen] = dataclasses.field(default=None, repr=False)
 
     @property
-    def name(self):
-        """str : Name of pseudo-component.
-
-        Value can only be set whe creating a new Comp instance.
-        """
-        return self._name
-
-    @name.setter
-    def name(self, value):
-        try:
-            self._name
-        except AttributeError:
-            self._name = value
-
-    def __eq__(self, other):
-        if isinstance(other, PseudoComp):
-            name_eq = self.name == other.name
-            return name_eq
-        return False
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def __hash__(self):
-        return hash(self.name)
+    def zc(self) -> float:
+        return self.pc * self.vc / (const.R * self.tc)
 
     def __str__(self):
-        return "Name: {}, MW: {}, SG: {}, NBP: {}".format(self.name, self.mw, self.sg, self.nbp)
+        metadata = {'Name': self.name,
+                    'CAS Registry Number': self.cas_no,
+                    'Formula': self.formula}
+        constants = {'Molecular Weight': self.mw,
+                     'Van der Waal Volume': self.vdwv,
+                     'Van der Waal Area': self.vdwa,
+                     'Radius of Gyration': self.rgyr,
+                     'Dipole Moment': self.dipole,
+                     'Quadrupole Moment': self.quadrupole,
+                     'Critical Temperature': self.tc,
+                     'Critical Pressure': self.pc,
+                     'Critical Volume': self.vc,
+                     'Critical Density': self.rhoc,
+                     'Acentric Factor': self.acentric,
+                     'Melting Point': self.mp,
+                     'Enthalpy of Fusion': self.hfus,
+                     'Ideal Gas Enthalpy of Formation': self.ig_hform,
+                     'Ideal Gas Gibbs Energy of Formation': self.ig_gform,
+                     'Ideal Gas Entropy': self.ig_entr,
+                     'Standard Net Enthalpy of Combustion': self.hcomb}
+        correlations = {'Vapor Pressure': (self.pvap_l, 'K', 'Pa'),
+                        'Liquid Density': (self.den_l, 'K', 'mol/m3'),
+                        'Heat of Vaporization': (self.hvap_l, 'K', 'J/mol'),
+                        'Liquid Heat Capacity:': (self.cp_l, 'K', 'J/mol.K'),
+                        'Ideal Gas Heat Capacity': (self.cp_ig, 'K', 'J/mol.K'),
+                        'Vapor Viscosity': (self.visc_ig, 'K', 'Pa.s'),
+                        'Liquid Viscosity': (self.visc_l, 'K', 'Pa.s'),
+                        'Vapor Thermal Conductivity': (self.tcond_ig, 'K', 'W/m.K'),
+                        'Liquid Thermal Conductivity': (self.tcond_l, 'K', 'W/m.K'),
+                        'Surface Tension': (self.surf_ten, 'K', 'N/m')}
+
+        output = []
+        for key, value in metadata.items():
+            if value is not None:
+                output.append("{}: {}\n".format(key, value))
+        for key, value in constants.items():
+            if value is not None:
+                if isinstance(value, utility.Const):
+                    output.append("{}: {} {}\n".format(key, value, value.unit))
+                else:
+                    output.append("{}: {}\n".format(key, value))
+        for key, value in correlations.items():
+            if value[0] is not None:
+                output.append("{} Correlation \n".format(key))
+                output.append("    Minimum Temperature: {} {}, Value: {} {}\n".format(value[0].t_min,
+                                                                                      value[1],
+                                                                                      value[0](value[0].t_min),
+                                                                                      value[2]))
+                output.append("    Maximum Temperature: {} {}, Value: {} {}\n".format(value[0].t_max,
+                                                                                      value[1],
+                                                                                      value[0](value[0].t_max),
+                                                                                      value[2]))
+        return "".join(output)
 
 
+@dataclasses.dataclass(frozen=True)
 class CompSet(object):
     """Set of components or pseudo-components.
 
-    Notes
-    -----
+    Attributes
+    ----------
+    comps : list or tuple of comps.Comps
+        List of components that are a part of the CompSet instance.
+    mw : list of float or None
+        Molecular weight for each Comp object in 'comps'.
     """
-    def __init__(self, comps=None):
-        """
-        Parameters
-        ----------
-        comps : list or tuple of Comp objects
-        """
-        if comps is None:
-            raise ValueError("comps must be provided to create an instance of CompSet.")
-        else:
-            self.comps = comps
+    comps: typing.List[Comp]
 
     @property
-    def comps(self):
-        """list or tuple of Comp objects : A collection of Comp objects.
-
-        Values can only be set whe creating a new CompSet instance.
-        """
-        return self._comps
-
-    @comps.setter
-    def comps(self, value):
-        try:
-            self._comps
-        except AttributeError:
-            if isinstance(value, (list, tuple)):
-                if len(value) == 0:
-                    raise ValueError("comps must contain at least one Comp object.")
-                elif len(value) != len(set(value)):
-                    raise ValueError("comps cannot contain duplicate Comp objects.")
-                elif all(isinstance(item, (Comp, PseudoComp)) for item in value):
-                    self._comps = value
-                else:
-                    raise TypeError("comps must contain only Comp or PseudoComp objects.")
-            else:
-                raise TypeError("comps must be a list or tuple.")
-
-    @property
-    def size(self):
-        """int : The number of Comp or PseudoComp objects in 'comps'."""
-        return len(self._comps)
-
-    @property
-    def can_associate(self):
-        """list of bool : Boolean indicating if Comp or PseudoComp objects in 'comps' can associate."""
-        result = []
-        for comp in self._comps:
-            if comp.assoc_sites is not None:
-                result.append(True)
-            else:
-                result.append(False)
-        return result
+    def names(self):
+        """list : Name for each Comp or PseudoComp object in 'comps'."""
+        return [comp.name for comp in self.comps]
 
     @property
     def mw(self):
-        """list of float or None : Molecular weight for each Comp or PseudoComp objects in 'comps'.
-
-        Returns None if any Comp or PseudoComp object is missing molecular weight."""
-        result = []
-        for comp in self._comps:
-            if comp.mw is None:
-                return None
-            else:
-                result.append(comp.mw)
+        """np.ndarray : Molecular weight for each Comp or PseudoComp objects in 'comps'."""
+        result = [comp.mw for comp in self.comps]
         return np.array(result)
 
+    @property
+    def tc(self):
+        """np.ndarray : Critical temperature for each Comp or PseudoComp objects in 'comps'."""
+        result = [comp.tc for comp in self.comps]
+        return np.array(result)
+
+    @property
+    def pc(self):
+        """np.ndarray : Critical pressure for each Comp or PseudoComp objects in 'comps'."""
+        result = [comp.pc for comp in self.comps]
+        return np.array(result)
+
+    @property
+    def acentric(self):
+        """np.ndarray : Acentric factor for each Comp or PseudoComp objects in 'comps'."""
+        result = [comp.acentric for comp in self.comps]
+        return np.array(result)
+
+    def __len__(self):
+        return len(self.comps)
+
     def __eq__(self, other):
-        if isinstance(other, CompSet):
-            return self.comps == other.comps
+        if isinstance(other, CompSet) and set(self.comps) == set(other.comps):
+            return True
+        if isinstance(other, Comp) and set(self.comps) == set([other]):
+            return True
         return False
 
     def __ne__(self, other):
-        return not self.__eq__(other)
+        return not self == other
 
-    def __hash__(self):
-        return hash(self._comps)
+    def __lt__(self, other):
+        if isinstance(other, CompSet) and set(self.comps).issubset(set(other.comps)):
+            return True
+        if isinstance(other, Comp) and set(self.comps).issubset(set([other])):
+            return True
+        return False
+
+    def __gt__(self, other):
+        if isinstance(other, CompSet) and set(other.comps).issubset(set(self.comps)):
+            return True
+        if isinstance(other, Comp) and set([other]).issubset(set(self.comps)):
+            return True
+        return False
+
+    def __le__(self, other):
+        if self < other or self == other:
+            return True
+        return False
+
+    def __ge__(self, other):
+        if self > other or self == other:
+            return True
+        return False
 
     def __str__(self):
-        result = []
-        for comp in self._comps:
-            result.append(comp.name)
-        return ",".join(tuple(result))
+        output = []
+        for comp in self.comps:
+            output.append("{}".format(comp.name))
+        return ", ".join(output)
+
+
+# Added by John Towne on April 1st, 2022, hcomb is suspiciously different than NIST
+methane = Comp(name='methane',
+                    cas_no='74-82-8',
+                    formula='CH4',
+                    mw=utility.Const(value=16.0425,
+                                     unit='g/mol',
+                                     source=refs.dippr),
+                    tc=utility.Const(value=190.564,
+                                     unit='K',
+                                     source=refs.dippr),
+                    pc=utility.Const(value=units.to_si(4.599, 'MPa'),
+                                     unit=units.to_si_unit('MPa'),
+                                     source=refs.dippr),
+                    vc=utility.Const(value=units.to_si(0.0986, 'm3/kmol'),
+                                     unit=units.to_si_unit('m3/kmol'),
+                                     source=refs.dippr),
+                    acentric=utility.Const(value=0.0115478,
+                                           unit='dimensionless',
+                                           source=refs.dippr),
+                    ig_hform=utility.Const(value=units.to_si(-7.452 * 10 ** 7.0, 'J/kmol'),
+                                           unit=units.to_si_unit('J/kmol'),
+                                           source=refs.dippr),
+                    ig_gform=utility.Const(value=units.to_si(-5.049 * 10 ** 7.0, 'J/kmol'),
+                                           unit=units.to_si_unit('J/kmol'),
+                                           source=refs.dippr),
+                    ig_entr=utility.Const(value=units.to_si(1.8627 * 10 ** 5.0, 'J/kmol.K'),
+                                          unit=units.to_si_unit('J/kmol.K'),
+                                          source=refs.dippr),
+                    hcomb=utility.Const(value=units.to_si(-0.80262 * 10 ** 9.0, 'J/kmol'),
+                                        # NIST shows different values.
+                                        unit=units.to_si_unit('J/kmol'),
+                                        source=refs.dippr),
+                    mp=utility.Const(value=units.to_si(-182.48, 'C'),
+                                     unit=units.to_si_unit('C'),
+                                     source=refs.perry),
+                    hfus=utility.Const(value=units.to_si(14.03 * 16.0425, 'cal/mol'),
+                                       unit=units.to_si_unit('cal/mol'),
+                                       source=refs.perry),
+                    pvap_l=utility.RiedelPvap(a=39.205,
+                                              b=-1324.4,
+                                              c=-3.4366,
+                                              d=0.000031019,
+                                              e=2.0,
+                                              unit='Pa',
+                                              t_unit='K',
+                                              t_min=90.69,
+                                              t_max=190.56,
+                                              source=refs.dippr),
+                    den_l=utility.DaubertDenL(a=2.9214,
+                                              b=0.28976,
+                                              c=190.56,
+                                              d=0.28881,
+                                              unit='mol/dm3',
+                                              t_unit='K',
+                                              t_min=90.69,
+                                              t_max=190.56,
+                                              source=refs.dippr),
+                    hvap_l=utility.PerryHvap(a=1.0194 * 10 ** 7.0,
+                                             b=0.26087,
+                                             c=-0.14694,
+                                             d=0.22154,
+                                             e=190.564,
+                                             unit='J/kmol',
+                                             t_unit='K',
+                                             t_min=90.690,
+                                             t_max=190.564,
+                                             source=refs.dippr),
+                    cp_l=utility.DIPPRCpL(a=65.708,
+                                          b=38883.0,
+                                          c=-257.95,
+                                          d=614.07,
+                                          e=190.564,
+                                          unit='J/kmol.K',
+                                          t_unit='K',
+                                          t_min=90.69,
+                                          t_max=190.00,
+                                          source=refs.dippr),
+                    cp_ig=utility.AlyLeeCpIg(a=0.33298 * 10 ** 5.0,
+                                             b=0.79933 * 10 ** 5.0,
+                                             c=2.0869 * 10 ** 3.0,
+                                             d=0.41602 * 10 ** 5.0,
+                                             e=991.96,
+                                             unit='J/kmol.K',
+                                             t_unit='K',
+                                             t_min=50.0,
+                                             t_max=1500.0,
+                                             source=refs.dippr),
+                    visc_ig=utility.KineticViscIg(a=5.2546 * 10 ** -7,
+                                                  b=0.59006,
+                                                  c=105.67,
+                                                  unit='Pa.s',
+                                                  t_unit='K',
+                                                  t_min=90.69,
+                                                  t_max=1000,
+                                                  source=refs.dippr),
+                    visc_l=utility.AndradeViscL(a=-6.1572,
+                                                b=178.15,
+                                                c=-0.95239,
+                                                d=-9.0606 * 10 ** -24,
+                                                e=10.0,
+                                                unit='Pa.s',
+                                                t_unit='K',
+                                                t_min=90.69,
+                                                t_max=188.0,
+                                                source=refs.dippr),
+                    tcond_ig=utility.KineticTcondIg(a=8.3983 * 10 ** -6,
+                                                    b=1.4268,
+                                                    c=-49.654,
+                                                    unit='W/m.K',
+                                                    t_unit='K',
+                                                    t_min=111.63,
+                                                    t_max=600.0,
+                                                    source=refs.dippr),
+                    tcond_l=utility.PolyTcondL(a=0.41768,
+                                               b=-0.0024528,
+                                               c=3.5588 * 10 ** -6,
+                                               unit='W/m.K',
+                                               t_unit='K',
+                                               t_min=90.69,
+                                               t_max=180.0,
+                                               source=refs.dippr),
+                    surf_ten=utility.SurfTen(a=37.432,
+                                             b=190.56,
+                                             c=1.092,
+                                             unit='dyne/cm',
+                                             t_unit='K',
+                                             t_min=90.69,
+                                             t_max=190.56,
+                                             source=refs.yaws))
+
+ethane = Comp(name='ethane',
+                   cas_no='74-84-0',
+                   formula='C2H6',
+                   mw=utility.Const(value=30.069,
+                                    unit='g/mol',
+                                    source=refs.dippr),
+                   pvap_l=utility.RiedelPvap(a=51.857,
+                                             b=-2598.7,
+                                             c=-5.1283,
+                                             d=0.000014913,
+                                             e=2.0,
+                                             unit='Pa',
+                                             t_unit='K',
+                                             t_min=90.35,
+                                             t_max=305.32,
+                                             source=refs.dippr),
+                   den_l=utility.DaubertDenL(a=1.9122,
+                                             b=0.27937,
+                                             c=305.32,
+                                             d=0.29187,
+                                             unit='mol/dm3',
+                                             t_unit='K',
+                                             t_min=90.35,
+                                             t_max=305.32,
+                                             source=refs.dippr),
+                   mp=utility.Const(value=units.to_si(-183.23, 'C'),
+                                    unit=units.to_si_unit('C'),
+                                    source=refs.perry),
+                   hfus=utility.Const(value=units.to_si(22.712 * 30.069, 'cal/mol'),
+                                      unit=units.to_si_unit('cal/mol'),
+                                      source=refs.perry),
+                   hvap_l=utility.PerryHvap(a=2.1091 * 10 ** 7.0,
+                                            b=0.60646,
+                                            c=-0.55492,
+                                            d=0.32799,
+                                            e=305.32,
+                                            unit='J/kmol',
+                                            t_unit='K',
+                                            t_min=90.35,
+                                            t_max=305.32,
+                                            source=refs.dippr),
+                   cp_l=utility.DIPPRCpL(a=44.009,
+                                         b=89718.0,
+                                         c=918.77,
+                                         d=-1886.0,
+                                         e=305.32,
+                                         unit='J/kmol.K',
+                                         t_unit='K',
+                                         t_min=92.0,
+                                         t_max=290.0,
+                                         source=refs.dippr),
+                   cp_ig=utility.AlyLeeCpIg(a=0.44256 * 10 ** 5,
+                                            b=0.84737 * 10 ** 5,
+                                            c=0.87224 * 10 ** 3,
+                                            d=0.67130 * 10 ** 5,
+                                            e=2430.0,
+                                            unit='J/kmol.K',
+                                            t_unit='K',
+                                            t_min=298.15,
+                                            t_max=1500.0),
+                   ig_hform=utility.Const(value=units.to_si(-8.382 * 10 ** 7, 'J/kmol'),
+                                          unit=units.to_si_unit('J/kmol'),
+                                          source=refs.dippr),
+                   ig_gform=utility.Const(value=units.to_si(-3.192 * 10 ** 7, 'J/kmol'),
+                                          unit=units.to_si_unit('J/kmol'),
+                                          source=refs.dippr),
+                   ig_entr=utility.Const(value=units.to_si(2.2912 * 10 ** 5, 'J/kmol.K'),
+                                         unit=units.to_si_unit('J/kmol.K'),
+                                         source=refs.dippr),
+                   hcomb=utility.Const(value=units.to_si(-1.42864 * 10 ** 9, 'J/kmol'),
+                                       unit=units.to_si_unit('J/kmol'),
+                                       source=refs.dippr),
+                   tc=utility.Const(value=305.32,
+                                    unit='K',
+                                    source=refs.dippr),
+                   pc=utility.Const(value=units.to_si(4.872, 'MPa'),
+                                    unit=units.to_si_unit('MPa'),
+                                    source=refs.dippr),
+                   vc=utility.Const(value=units.to_si(0.1455, 'm3/kmol'),
+                                    unit=units.to_si_unit('m3/kmol'),
+                                    source=refs.dippr),
+                   acentric=utility.Const(value=0.099493,
+                                          unit='dimensionless',
+                                          source=refs.dippr),
+                   visc_ig=utility.KineticViscIg(a=2.5906 * 10 ** -7,
+                                                 b=0.67988,
+                                                 c=98.902,
+                                                 unit='Pa.s',
+                                                 t_unit='K',
+                                                 t_min=90.35,
+                                                 t_max=1000.0,
+                                                 source=refs.dippr),
+                   visc_l=utility.AndradeViscL(a=-7.0046,
+                                               b=276.38,
+                                               c=-0.6087,
+                                               d=-3.11 * 10 ** -18,
+                                               e=7.0,
+                                               unit='Pa.s',
+                                               t_unit='K',
+                                               t_min=90.35,
+                                               t_max=300.0,
+                                               source=refs.dippr),
+                   tcond_ig=utility.KineticTcondIg(a=0.000073869,
+                                                   b=1.1689,
+                                                   c=500.73,
+                                                   unit='W/m.K',
+                                                   t_unit='K',
+                                                   t_min=184.55,
+                                                   t_max=1000.0,
+                                                   source=refs.dippr),
+                   tcond_l=utility.PolyTcondL(a=0.35758,
+                                              b=-0.0011458,
+                                              c=6.1866 * 10 ** -7,
+                                              unit='W/m.K',
+                                              t_unit='K',
+                                              t_min=90.35,
+                                              t_max=300.0,
+                                              source=refs.dippr),
+                   surf_ten=utility.SurfTen(a=49.63,
+                                            b=305.32,
+                                            c=1.2065,
+                                            unit='dyne/cm',
+                                            t_unit='K',
+                                            t_min=90.37,
+                                            t_max=305.32,
+                                            source=refs.yaws))
+
+propane = Comp(name='propane',
+                    cas_no='74-98-6',
+                    formula='C3H8',
+                    mw=utility.Const(value=44.09562,
+                                     unit='g/mol',
+                                     source=refs.dippr),
+                    pvap_l=utility.RiedelPvap(a=59.078,
+                                              b=-3492.6,
+                                              c=-6.0669,
+                                              d=0.000010919,
+                                              e=2.0,
+                                              unit='Pa',
+                                              t_unit='K',
+                                              t_min=85.47,
+                                              t_max=369.83,
+                                              source=refs.dippr),
+                    den_l=utility.DaubertDenL(a=1.3757,
+                                              b=0.27453,
+                                              c=369.83,
+                                              d=0.29359,
+                                              unit='mol/dm3',
+                                              t_unit='K',
+                                              t_min=85.47,
+                                              t_max=369.83,
+                                              source=refs.dippr),
+                    mp=utility.Const(value=units.to_si(-187.65, 'C'),
+                                     unit=units.to_si_unit('C'),
+                                     source=refs.perry),
+                    hfus=utility.Const(value=units.to_si(19.1 * 44.09562, 'cal/mol'),
+                                       unit=units.to_si_unit('cal/mol'),
+                                       source=refs.perry),
+                    hvap_l=utility.PerryHvap(a=2.9209 * 10 ** 7,
+                                             b=0.78237,
+                                             c=-0.77319,
+                                             d=0.39246,
+                                             e=369.83,
+                                             unit='J/kmol',
+                                             t_unit='K',
+                                             t_min=85.47,
+                                             t_max=369.83,
+                                             source=refs.dippr),
+                    cp_l=utility.DIPPRCpL(a=62.983,
+                                          b=113630.0,
+                                          c=633.21,
+                                          d=-873.46,
+                                          e=369.83,
+                                          unit='J/kmol.K',
+                                          t_unit='K',
+                                          t_min=85.47,
+                                          t_max=360.0,
+                                          source=refs.dippr),
+                    cp_ig=utility.AlyLeeCpIg(a=0.59474 * 10 ** 5,
+                                             b=1.2661 * 10 ** 5,
+                                             c=0.84431 * 10 ** 3,
+                                             d=0.86165 * 10 ** 5,
+                                             e=2482.8,
+                                             unit='J/kmol.K',
+                                             t_unit='K',
+                                             t_min=298.15,
+                                             t_max=1500,
+                                             source=refs.dippr),
+                    ig_hform=utility.Const(value=units.to_si(-10.468 * 10 ** 7, 'J/kmol'),
+                                           unit=units.to_si_unit('J/kmol'),
+                                           source=refs.dippr),
+                    ig_gform=utility.Const(value=units.to_si(-2.439 * 10 ** 7, 'J/kmol'),
+                                           unit=units.to_si_unit('J/kmol'),
+                                           source=refs.dippr),
+                    ig_entr=utility.Const(value=units.to_si(2.702 * 10 ** 5, 'J/kmol.K'),
+                                          unit=units.to_si_unit('J/kmol.K'),
+                                          source=refs.dippr),
+                    hcomb=utility.Const(value=units.to_si(-2.04311 * 10 ** 9, 'J/kmol'),
+                                        unit=units.to_si_unit('J/kmol'),
+                                        source=refs.dippr),
+                    tc=utility.Const(value=369.83,
+                                     unit='K',
+                                     source=refs.dippr),
+                    pc=utility.Const(value=units.to_si(4.248, 'MPa'),
+                                     unit=units.to_si_unit('MPa'),
+                                     source=refs.dippr),
+                    vc=utility.Const(value=units.to_si(0.2, 'm3/kmol'),
+                                     unit=units.to_si_unit('m3/kmol'),
+                                     source=refs.dippr),
+                    acentric=utility.Const(value=0.152291,
+                                           unit='dimensionless',
+                                           source=refs.dippr),
+                    visc_ig=utility.KineticViscIg(a=4.9054 * 10 ** -8,
+                                                  b=0.90125,
+                                                  unit='Pa.s',
+                                                  t_unit='K',
+                                                  t_min=85.47,
+                                                  t_max=1000.0,
+                                                  source=refs.dippr),
+                    visc_l=utility.AndradeViscL(a=-17.156,
+                                                b=646.25,
+                                                c=1.1101,
+                                                d=-7.3439 * 10 ** -11,
+                                                e=4.0,
+                                                unit='Pa.s',
+                                                t_unit='K',
+                                                t_min=85.47,
+                                                t_max=360.0,
+                                                source=refs.dippr),
+                    tcond_ig=utility.KineticTcondIg(a=-1.12,
+                                                    b=0.10972,
+                                                    c=-9834.6,
+                                                    d=-7535800.0,
+                                                    unit='W/m.K',
+                                                    t_unit='K',
+                                                    t_min=231.11,
+                                                    t_max=1000.0,
+                                                    source=refs.dippr),
+                    tcond_l=utility.PolyTcondL(a=0.26755,
+                                               b=-0.00066457,
+                                               c=2.77 * 10 ** -7,
+                                               unit='W/m.K',
+                                               t_unit='K',
+                                               t_min=85.47,
+                                               t_max=350.0,
+                                               source=refs.dippr),
+                    surf_ten=utility.SurfTen(a=49.179,
+                                             b=369.83,
+                                             c=1.22222,
+                                             unit='dyne/cm',
+                                             t_unit='K',
+                                             t_min=85.53,
+                                             t_max=369.83,
+                                             source=refs.yaws))
+
+n_butane = Comp(name='butane',
+                     cas_no='106-97-8',
+                     formula='C4H10',
+                     mw=utility.Const(value=58.1222,
+                                      unit='g/mol',
+                                      source=refs.dippr),
+                     pvap_l=utility.RiedelPvap(a=66.343,
+                                               b=-4363.2,
+                                               c=-7.046,
+                                               d=9.4509 * 10 ** -6,
+                                               e=2.0,
+                                               unit='Pa',
+                                               t_unit='K',
+                                               t_min=134.86,
+                                               t_max=425.12,
+                                               source=refs.dippr),
+                     den_l=utility.DaubertDenL(a=1.0677,
+                                               b=0.27188,
+                                               c=425.12,
+                                               d=0.28688,
+                                               unit='mol/dm3',
+                                               t_unit='K',
+                                               t_min=134.86,
+                                               t_max=425.12,
+                                               source=refs.dippr),
+                     mp=utility.Const(value=units.to_si(138.33, 'C'),
+                                      unit=units.to_si_unit('C'),
+                                      source=refs.perry),
+                     hfus=utility.Const(value=units.to_si(19.167 * 58.1222, 'cal/mol'),
+                                        unit=units.to_si_unit('cal/mol'),
+                                        source=refs.perry),
+                     hvap_l=utility.PerryHvap(a=3.6238 * 10 ** 7,
+                                              b=0.8337,
+                                              c=-0.82274,
+                                              d=0.39613,
+                                              e=425.12,
+                                              unit='J/kmol',
+                                              t_unit='K',
+                                              t_min=134.86,
+                                              t_max=425.12,
+                                              source=refs.dippr),
+                     cp_l=utility.PolyCpL(a=191030.0,
+                                          b=-1675.0,
+                                          c=12.5,
+                                          d=-0.03874,
+                                          e=0.000046121,
+                                          unit='J/kmol.K',
+                                          t_unit='K',
+                                          t_min=134.86,
+                                          t_max=400.0,
+                                          source=refs.dippr),
+                     cp_ig=utility.AlyLeeCpIg(a=0.80154 * 10 ** 5,
+                                              b=1.6242 * 10 ** 5,
+                                              c=0.84149 * 10 ** 3,
+                                              d=1.0575 * 10 ** 5,
+                                              e=2476.1,
+                                              unit='J/kmol.K',
+                                              t_unit='K',
+                                              t_min=298.15,
+                                              t_max=1500,
+                                              source=refs.dippr),
+                     ig_hform=utility.Const(value=units.to_si(-12.579 * 10 ** 7, 'J/kmol'),
+                                            unit=units.to_si_unit('J/kmol'),
+                                            source=refs.dippr),
+                     ig_gform=utility.Const(value=units.to_si(-1.67 * 10 ** 7, 'J/kmol'),
+                                            unit=units.to_si_unit('J/kmol'),
+                                            source=refs.dippr),
+                     ig_entr=utility.Const(value=units.to_si(3.0991 * 10 ** 5, 'J/kmol.K'),
+                                           unit=units.to_si_unit('J/kmol.K'),
+                                           source=refs.dippr),
+                     hcomb=utility.Const(value=units.to_si(-2.65732 * 10 ** 9, 'J/kmol'),
+                                         unit=units.to_si_unit('J/kmol'),
+                                         source=refs.dippr),
+                     tc=utility.Const(value=425.12,
+                                      unit='K',
+                                      source=refs.dippr),
+                     pc=utility.Const(value=units.to_si(3.796, 'MPa'),
+                                      unit=units.to_si_unit('MPa'),
+                                      source=refs.dippr),
+                     vc=utility.Const(value=units.to_si(0.255, 'm3/kmol'),
+                                      unit=units.to_si_unit('m3/kmol'),
+                                      source=refs.dippr),
+                     acentric=utility.Const(value=0.200164,
+                                            unit='dimensionless',
+                                            source=refs.dippr))
+
+i_butane = Comp(name='2-methylpropane',
+                     cas_no='75-28-5',
+                     formula='C4H10',
+                     mw=utility.Const(value=58.1222,
+                                      unit='g/mol',
+                                      source=refs.dippr),
+                     pvap_l=utility.RiedelPvap(a=108.43,
+                                               b=-5039.9,
+                                               c=-15.012,
+                                               d=0.022725,
+                                               e=1.0,
+                                               unit='Pa',
+                                               t_unit='K',
+                                               t_min=113.54,
+                                               t_max=407.8,
+                                               source=refs.dippr),
+                     den_l=utility.DaubertDenL(a=1.0631,
+                                               b=0.27506,
+                                               c=407.8,
+                                               d=0.2758,
+                                               unit='mol/dm3',
+                                               t_unit='K',
+                                               t_min=113.54,
+                                               t_max=407.8,
+                                               source=refs.dippr),
+                     tc=utility.Const(value=407.8,
+                                      unit='K',
+                                      source=refs.dippr),
+                     pc=utility.Const(value=units.to_si(3.64, 'MPa'),
+                                      unit=units.to_si_unit('MPa'),
+                                      source=refs.dippr),
+                     vc=utility.Const(value=units.to_si(0.259, 'm3/kmol'),
+                                      unit=units.to_si_unit('m3/kmol'),
+                                      source=refs.dippr),
+                     acentric=utility.Const(value=0.183512,
+                                            unit='dimensionless',
+                                            source=refs.dippr))
+
+n_pentane = Comp(name='pentane',
+                      cas_no='109-66-0',
+                      formula='C5H12',
+                      mw=utility.Const(value=72.14878,
+                                       unit='g/mol',
+                                       source=refs.dippr),
+                      pvap_l=utility.RiedelPvap(a=78.741,
+                                                b=-5420.3,
+                                                c=-8.8253,
+                                                d=9.6171 * 10 ** -6,
+                                                e=2.0,
+                                                unit='Pa',
+                                                t_unit='K',
+                                                t_min=143.42,
+                                                t_max=469.7,
+                                                source=refs.dippr),
+                      den_l=utility.DaubertDenL(a=0.84947,
+                                                b=0.26726,
+                                                c=469.7,
+                                                d=0.27789,
+                                                unit='mol/dm3',
+                                                t_unit='K',
+                                                t_min=143.42,
+                                                t_max=469.70,
+                                                source=refs.dippr),
+                      tc=utility.Const(value=469.7,
+                                       unit='K',
+                                       source=refs.dippr),
+                      pc=utility.Const(value=units.to_si(3.37, 'MPa'),
+                                       unit=units.to_si_unit('MPa'),
+                                       source=refs.dippr),
+                      vc=utility.Const(value=units.to_si(0.313, 'm3/kmol'),
+                                       unit=units.to_si_unit('m3/kmol'),
+                                       source=refs.dippr),
+                      acentric=utility.Const(value=0.251506,
+                                             unit='dimensionless',
+                                             source=refs.dippr))
+
+i_pentane = Comp(name='2-methylbutane',
+                      cas_no='78-78-4',
+                      formula='C5H12',
+                      mw=utility.Const(value=72.14878,
+                                       unit='g/mol',
+                                       source=refs.dippr),
+                      pvap_l=utility.RiedelPvap(a=71.308,
+                                                b=-4976.0,
+                                                c=-7.7169,
+                                                d=8.7271 * 10 ** -6,
+                                                e=2.0,
+                                                unit='Pa',
+                                                t_unit='K',
+                                                t_min=113.25,
+                                                t_max=460.4,
+                                                source=refs.dippr),
+                      den_l=utility.DaubertDenL(a=0.91991,
+                                                b=0.27815,
+                                                c=460.4,
+                                                d=0.28667,
+                                                unit='mol/dm3',
+                                                t_unit='K',
+                                                t_min=113.25,
+                                                t_max=460.4,
+                                                source=refs.dippr),
+                      tc=utility.Const(value=460.4,
+                                       unit='K',
+                                       source=refs.dippr),
+                      pc=utility.Const(value=units.to_si(3.38, 'MPa'),
+                                       unit=units.to_si_unit('MPa'),
+                                       source=refs.dippr),
+                      vc=utility.Const(value=units.to_si(0.306, 'm3/kmol'),
+                                       unit=units.to_si_unit('m3/kmol'),
+                                       source=refs.dippr),
+                      acentric=utility.Const(value=0.227875,
+                                             unit='dimensionless',
+                                             source=refs.dippr))
+
+n_hexane = Comp(name='hexane',
+                     cas_no='110-54-3',
+                     formula='C6H14',
+                     mw=utility.Const(value=86.17536,
+                                      unit='g/mol',
+                                      source=refs.dippr),
+                     pvap_l=utility.RiedelPvap(a=104.65,
+                                               b=-6995.5,
+                                               c=12.702,
+                                               d=0.000012381,
+                                               e=2.0,
+                                               unit='Pa',
+                                               t_unit='K',
+                                               t_min=177.83,
+                                               t_max=507.6,
+                                               source=refs.dippr),
+                     den_l=utility.DaubertDenL(a=0.70824,
+                                               b=0.26411,
+                                               c=507.6,
+                                               d=0.27537,
+                                               unit='mol/dm3',
+                                               t_unit='K',
+                                               t_min=177.83,
+                                               t_max=507.6,
+                                               source=refs.dippr),
+                     tc=utility.Const(value=507.6,
+                                      unit='K',
+                                      source=refs.dippr),
+                     pc=utility.Const(value=units.to_si(3.025, 'MPa'),
+                                      unit=units.to_si_unit('MPa'),
+                                      source=refs.dippr),
+                     vc=utility.Const(value=units.to_si(0.371, 'm3/kmol'),
+                                      unit=units.to_si_unit('m3/kmol'),
+                                      source=refs.dippr),
+                     acentric=utility.Const(value=0.301261,
+                                            unit='dimensionless',
+                                            source=refs.dippr))
+
+c_hexane = Comp(name='cyclohexane',
+                     cas_no='110-82-7',
+                     formula='C6H12',
+                     mw=utility.Const(value=84.15948,
+                                      unit='g/mol',
+                                      source=refs.dippr),
+                     pvap_l=utility.RiedelPvap(a=51.087,
+                                               b=-5226.4,
+                                               c=-4.2278,
+                                               d=9.76 * 10 ** -18,
+                                               e=6.0,
+                                               unit='Pa',
+                                               t_unit='K',
+                                               t_min=279.6,
+                                               t_max=553.8,
+                                               source=refs.dippr),
+                     den_l=utility.DaubertDenL(a=0.88998,
+                                               b=0.27376,
+                                               c=553.8,
+                                               d=0.28571,
+                                               unit='mol/dm3',
+                                               t_unit='K',
+                                               t_min=279.69,
+                                               t_max=553.8,
+                                               source=refs.dippr),
+                     tc=utility.Const(value=553.8,
+                                      unit='K',
+                                      source=refs.dippr),
+                     pc=utility.Const(value=units.to_si(4.08, 'MPa'),
+                                      unit=units.to_si_unit('MPa'),
+                                      source=refs.dippr),
+                     vc=utility.Const(value=units.to_si(0.308, 'm3/kmol'),
+                                      unit=units.to_si_unit('m3/kmol'),
+                                      source=refs.dippr),
+                     acentric=utility.Const(value=0.208054,
+                                            unit='dimensionless',
+                                            source=refs.dippr))
+
+benzene = Comp(name='benzene',
+                    cas_no='71-43-2',
+                    formula='C6H6',
+                    mw=utility.Const(value=78.11184,
+                                     unit='g/mol',
+                                     source=refs.dippr),
+                    pvap_l=utility.RiedelPvap(a=83.107,
+                                              b=-6486.2,
+                                              c=-9.2194,
+                                              d=6.9844 * 10 ** -6,
+                                              e=2.0,
+                                              unit='Pa',
+                                              t_unit='K',
+                                              t_min=278.68,
+                                              t_max=562.05,
+                                              source=refs.dippr),
+                    den_l=utility.DaubertDenL(a=1.0259,
+                                              b=0.26666,
+                                              c=562.05,
+                                              d=0.28394,
+                                              unit='mol/dm3',
+                                              t_unit='K',
+                                              t_min=278.68,
+                                              t_max=562.05,
+                                              source=refs.dippr),
+                    tc=utility.Const(value=562.05,
+                                     unit='K',
+                                     source=refs.dippr),
+                    pc=utility.Const(value=units.to_si(4.895, 'MPa'),
+                                     unit=units.to_si_unit('MPa'),
+                                     source=refs.dippr),
+                    vc=utility.Const(value=units.to_si(0.256, 'm3/kmol'),
+                                     unit=units.to_si_unit('m3/kmol'),
+                                     source=refs.dippr),
+                    acentric=utility.Const(value=0.2103,
+                                           unit='dimensionless',
+                                           source=refs.dippr))
+
+heptane = Comp(name='heptane',
+                    cas_no='142-82-5',
+                    formula='C7H16',
+                    mw=utility.Const(value=1234.5,
+                                     unit='g/mol',
+                                     source=refs.dippr),
+                    pvap_l=utility.RiedelPvap(a=87.829,
+                                              b=-6996.4,
+                                              c=-9.8802,
+                                              d=7.2099 * 10 ** -6,
+                                              e=2.0,
+                                              unit='Pa',
+                                              t_unit='K',
+                                              t_min=182.57,
+                                              t_max=540.2,
+                                              source=refs.dippr),
+                    den_l=utility.DaubertDenL(a=0.61259,
+                                              b=0.26211,
+                                              c=540.2,
+                                              d=0.28141,
+                                              unit='mol/dm3',
+                                              t_unit='K',
+                                              t_min=182.57,
+                                              t_max=540.2,
+                                              source=refs.dippr),
+                    tc=utility.Const(value=540.2,
+                                     unit='K',
+                                     source=refs.dippr),
+                    pc=utility.Const(value=units.to_si(2.74, 'MPa'),
+                                     unit=units.to_si_unit('MPa'),
+                                     source=refs.dippr),
+                    vc=utility.Const(value=units.to_si(0.428, 'm3/kmol'),
+                                     unit=units.to_si_unit('m3/kmol'),
+                                     source=refs.dippr),
+                    acentric=utility.Const(value=0.349469,
+                                           unit='dimensionless',
+                                           source=refs.dippr))
+
+mc_hexane = Comp(name='methylcyclohexane',
+                      cas_no='108-87-2',
+                      formula='C7H14',
+                      mw=utility.Const(value=98.18606,
+                                       unit='g/mol',
+                                       source=refs.dippr),
+                      pvap_l=utility.RiedelPvap(a=92.684,
+                                                b=-7080.8,
+                                                c=-10.695,
+                                                d=8.1366 * 10 ** -6,
+                                                e=2.0,
+                                                unit='Pa',
+                                                t_unit='K',
+                                                t_min=146.58,
+                                                t_max=572.1,
+                                                source=refs.dippr),
+                      den_l=utility.DaubertDenL(a=0.73109,
+                                                b=0.26971,
+                                                c=572.1,
+                                                d=0.29185,
+                                                unit='mol/dm3',
+                                                t_unit='K',
+                                                t_min=146.58,
+                                                t_max=572.1,
+                                                source=refs.dippr),
+                      tc=utility.Const(value=572.1,
+                                       unit='K',
+                                       source=refs.dippr),
+                      pc=utility.Const(value=units.to_si(3.48, 'MPa'),
+                                       unit=units.to_si_unit('MPa'),
+                                       source=refs.dippr),
+                      vc=utility.Const(value=units.to_si(0.369, 'm3/kmol'),
+                                       unit=units.to_si_unit('m3/kmol'),
+                                       source=refs.dippr),
+                      acentric=utility.Const(value=0.236055,
+                                             unit='dimensionless',
+                                             source=refs.dippr))
+
+toluene = Comp(name='toluene',
+                    cas_no='108-88-3',
+                    formula='C7H8',
+                    mw=utility.Const(value=92.13842,
+                                     unit='g/mol',
+                                     source=refs.dippr),
+                    pvap_l=utility.RiedelPvap(a=76.945,
+                                              b=-6729.8,
+                                              c=-8.179,
+                                              d=5.3017 * 10 ** -6,
+                                              e=2.0,
+                                              unit='Pa',
+                                              t_unit='K',
+                                              t_min=178.18,
+                                              t_max=591.75,
+                                              source=refs.dippr),
+                    den_l=utility.DaubertDenL(a=0.8792,
+                                              b=0.27136,
+                                              c=591.75,
+                                              d=0.29241,
+                                              unit='mol/dm3',
+                                              t_unit='K',
+                                              t_min=178.18,
+                                              t_max=591.75,
+                                              source=refs.dippr),
+                    tc=utility.Const(value=591.75,
+                                     unit='K',
+                                     source=refs.dippr),
+                    pc=utility.Const(value=units.to_si(4.108, 'MPa'),
+                                     unit=units.to_si_unit('MPa'),
+                                     source=refs.dippr),
+                    vc=utility.Const(value=units.to_si(0.316, 'm3/kmol'),
+                                     unit=units.to_si_unit('m3/kmol'),
+                                     source=refs.dippr),
+                    acentric=utility.Const(value=0.264012,
+                                           unit='dimensionless',
+                                           source=refs.dippr))
+
+octane = Comp(name='octane',
+                   cas_no='111-65-9',
+                   formula='C8H18',
+                   mw=utility.Const(value=114.22852,
+                                    unit='g/mol',
+                                    source=refs.dippr),
+                   pvap_l=utility.RiedelPvap(a=96.084,
+                                             b=-7900.2,
+                                             c=-11.003,
+                                             d=7.1802*10**-6,
+                                             e=2,
+                                             unit='Pa',
+                                             t_unit='K',
+                                             t_min=216.38,
+                                             t_max=568.7,
+                                             source=refs.dippr),
+                   den_l=utility.DaubertDenL(a=0.5266,
+                                             b=0.25693,
+                                             c=568.7,
+                                             d=0.28571,
+                                             unit='mol/dm3',
+                                             t_unit='K',
+                                             t_min=216.38,
+                                             t_max=568.7,
+                                             source=refs.dippr),
+                   tc=utility.Const(value=568.7,
+                                    unit='K',
+                                    source=refs.dippr),
+                   pc=utility.Const(value=units.to_si(2.49, 'MPa'),
+                                    unit=units.to_si_unit('MPa'),
+                                    source=refs.dippr),
+                   vc=utility.Const(value=units.to_si(0.486, 'm3/kmol'),
+                                    unit=units.to_si_unit('m3/kmol'),
+                                    source=refs.dippr),
+                   acentric=utility.Const(value=0.399552,
+                                          unit='dimensionless',
+                                          source=refs.dippr))
+
+nonane = Comp(name='nonane',
+                   cas_no='111-84-2',
+                   formula='C9H20',
+                   mw=utility.Const(value=128.2551,
+                                    unit='g/mol',
+                                    source=refs.dippr),
+                   pvap_l=utility.RiedelPvap(a=109.35,
+                                             b=-9030.4,
+                                             c=-12.882,
+                                             d=7.8544*10**-6,
+                                             e=2,
+                                             unit='Pa',
+                                             t_unit='K',
+                                             t_min=219.66,
+                                             t_max=594.6,
+                                             source=refs.dippr),
+                   den_l=utility.DaubertDenL(a=0.46321,
+                                             b=0.25444,
+                                             c=594.6,
+                                             d=0.28571,
+                                             unit='mol/dm3',
+                                             t_unit='K',
+                                             t_min=219.66,
+                                             t_max=594.6,
+                                             source=refs.dippr),
+                   tc=utility.Const(value=594.6,
+                                    unit='K',
+                                    source=refs.dippr),
+                   pc=utility.Const(value=units.to_si(2.29, 'MPa'),
+                                    unit=units.to_si_unit('MPa'),
+                                    source=refs.dippr),
+                   vc=utility.Const(value=units.to_si(0.551, 'm3/kmol'),
+                                    unit=units.to_si_unit('m3/kmol'),
+                                    source=refs.dippr),
+                   acentric=utility.Const(value=0.44346,
+                                          unit='dimensionless',
+                                          source=refs.dippr))
+
+decane = Comp(name='decane',
+                   cas_no='124-18-5',
+                   formula='C10H22',
+                   mw=utility.Const(value=142.48168,
+                                    unit='g/mol',
+                                    source=refs.dippr),
+                   pvap_l=utility.RiedelPvap(a=112.73,
+                                             b=-9749.6,
+                                             c=-13.245,
+                                             d=7.1266*10**-6,
+                                             e=2,
+                                             unit='Pa',
+                                             t_unit='K',
+                                             t_min=243.51,
+                                             t_max=617.7,
+                                             source=refs.dippr),
+                   den_l=utility.DaubertDenL(a=0.41084,
+                                             b=0.25175,
+                                             c=617.7,
+                                             d=0.28571,
+                                             unit='mol/dm3',
+                                             t_unit='K',
+                                             t_min=243.51,
+                                             t_max=617.7,
+                                             source=refs.dippr),
+                   tc=utility.Const(value=617.7,
+                                    unit='K',
+                                    source=refs.dippr),
+                   pc=utility.Const(value=units.to_si(2.11, 'MPa'),
+                                    unit=units.to_si_unit('MPa'),
+                                    source=refs.dippr),
+                   vc=utility.Const(value=units.to_si(0.617, 'm3/kmol'),
+                                    unit=units.to_si_unit('m3/kmol'),
+                                    source=refs.dippr),
+                   acentric=utility.Const(value=0.492328,
+                                          unit='dimensionless',
+                                          source=refs.dippr))
+
+undecane = Comp(name='undecane',
+                     cas_no='1120-21-4',
+                     formula='C11H24',
+                     mw=utility.Const(value=156.30826,
+                                      unit='g/mol',
+                                      source=refs.dippr),
+                     pvap_l=utility.RiedelPvap(a=131.0,
+                                               b=-11143.0,
+                                               c=-15.855,
+                                               d=8.1871*10**-6,
+                                               e=2.0,
+                                               unit='Pa',
+                                               t_unit='K',
+                                               t_min=247.57,
+                                               t_max=639.0,
+                                               source=refs.dippr),
+                     den_l=utility.DaubertDenL(a=0.36703,
+                                               b=0.24876,
+                                               c=639.0,
+                                               d=0.28571,
+                                               unit='mol/dm3',
+                                               t_unit='K',
+                                               t_min=247.57,
+                                               t_max=639.0,
+                                               source=refs.dippr),
+                     tc=utility.Const(value=639.0,
+                                      unit='K',
+                                      source=refs.dippr),
+                     pc=utility.Const(value=units.to_si(1.95, 'MPa'),
+                                      unit=units.to_si_unit('MPa'),
+                                      source=refs.dippr),
+                     vc=utility.Const(value=units.to_si(0.685, 'm3/kmol'),
+                                      unit=units.to_si_unit('m3/kmol'),
+                                      source=refs.dippr),
+                     acentric=utility.Const(value=0.530316,
+                                            unit='dimensionless',
+                                            source=refs.dippr))
+
+dodecane = Comp(name='dodecane',
+                     cas_no='112-40-3',
+                     formula='C12H26',
+                     mw=utility.Const(value=170.33484,
+                                      unit='g/mol',
+                                      source=refs.dippr),
+                     pvap_l=utility.RiedelPvap(a=137.47,
+                                               b=-11976.0,
+                                               c=-16.698,
+                                               d=8.0906*10**-6,
+                                               e=2.0,
+                                               unit='Pa',
+                                               t_unit='K',
+                                               t_min=263.57,
+                                               t_max=658.0,
+                                               source=refs.dippr),
+                     den_l=utility.DaubertDenL(a=0.33267,
+                                               b=0.24664,
+                                               c=658.0,
+                                               d=0.28571,
+                                               unit='mol/dm3',
+                                               t_unit='K',
+                                               t_min=263.57,
+                                               t_max=658.0,
+                                               source=refs.dippr),
+                     tc=utility.Const(value=658.0,
+                                      unit='K',
+                                      source=refs.dippr),
+                     pc=utility.Const(value=units.to_si(1.82, 'MPa'),
+                                      unit=units.to_si_unit('MPa'),
+                                      source=refs.dippr),
+                     vc=utility.Const(value=units.to_si(0.755, 'm3/kmol'),
+                                      unit=units.to_si_unit('m3/kmol'),
+                                      source=refs.dippr),
+                     acentric=utility.Const(value=0.576385,
+                                            unit='dimensionless',
+                                            source=refs.dippr))
+
+nitrogen = Comp(name='nitrogen',
+                     cas_no='7727-37-9',
+                     formula='N2',
+                     mw=utility.Const(value=28.0134,
+                                      unit='g/mol',
+                                      source=refs.dippr),
+                     pvap_l=utility.RiedelPvap(a=58.282,
+                                               b=-1084.1,
+                                               c=-8.3144,
+                                               d=0.044127,
+                                               e=1.0,
+                                               unit='Pa',
+                                               t_unit='K',
+                                               t_min=63.15,
+                                               t_max=126.2,
+                                               source=refs.dippr),
+                     den_l=utility.DaubertDenL(a=3.2091,
+                                               b=0.2861,
+                                               c=126.2,
+                                               d=0.2966,
+                                               unit='mol/dm3',
+                                               t_unit='K',
+                                               t_min=63.15,
+                                               t_max=126.2,
+                                               source=refs.dippr),
+                     tc=utility.Const(value=126.2,
+                                      unit='K',
+                                      source=refs.dippr),
+                     pc=utility.Const(value=units.to_si(3.4, 'MPa'),
+                                      unit=units.to_si_unit('MPa'),
+                                      source=refs.dippr),
+                     vc=utility.Const(value=units.to_si(0.08921, 'm3/kmol'),
+                                      unit=units.to_si_unit('m3/kmol'),
+                                      source=refs.dippr),
+                     acentric=utility.Const(value=0.0377215,
+                                            unit='dimensionless',
+                                            source=refs.dippr))
+
+oxygen = Comp(name='oxygen',
+                   cas_no='7782-44-7',
+                   formula='O2',
+                   mw=utility.Const(value=31.9988,
+                                    unit='g/mol',
+                                    source=refs.dippr),
+                   pvap_l=utility.RiedelPvap(a=51.245,
+                                             b=-1200.2,
+                                             c=-6.4361,
+                                             d=0.028405,
+                                             e=1.0,
+                                             unit='Pa',
+                                             t_unit='K',
+                                             t_min=54.36,
+                                             t_max=154.58,
+                                             source=refs.dippr),
+                   den_l=utility.DaubertDenL(a=3.9143,
+                                             b=0.28772,
+                                             c=154.58,
+                                             d=0.2924,
+                                             unit='mol/dm3',
+                                             t_unit='K',
+                                             t_min=54.36,
+                                             t_max=154.58,
+                                             source=refs.dippr),
+                   tc=utility.Const(value=154.58,
+                                    unit='K',
+                                    source=refs.dippr),
+                   pc=utility.Const(value=units.to_si(5.043, 'MPa'),
+                                    unit=units.to_si_unit('MPa'),
+                                    source=refs.dippr),
+                   vc=utility.Const(value=units.to_si(0.0734, 'm3/kmol'),
+                                    unit=units.to_si_unit('m3/kmol'),
+                                    source=refs.dippr),
+                   acentric=utility.Const(value=0.0221798,
+                                          unit='dimensionless',
+                                          source=refs.dippr))
+
+argon = Comp(name='argon',
+                  cas_no='7440-37-1',
+                  formula='Ar',
+                  mw=utility.Const(value=39.948,
+                                   unit='g/mol',
+                                   source=refs.dippr),
+                  pvap_l=utility.RiedelPvap(a=42.127,
+                                            b=-1093.1,
+                                            c=-4.1425,
+                                            d=0.000057254,
+                                            e=2.0,
+                                            unit='Pa',
+                                            t_unit='K',
+                                            t_min=83.78,
+                                            t_max=150.86,
+                                            source=refs.dippr),
+                  den_l=utility.DaubertDenL(a=3.8469,
+                                            b=0.2881,
+                                            c=150.86,
+                                            d=0.29783,
+                                            unit='mol/dm3',
+                                            t_unit='K',
+                                            t_min=83.78,
+                                            t_max=150.86,
+                                            source=refs.dippr),
+                  tc=utility.Const(value=150.86,
+                                   unit='K',
+                                   source=refs.dippr),
+                  pc=utility.Const(value=units.to_si(4.898, 'MPa'),
+                                   unit=units.to_si_unit('MPa'),
+                                   source=refs.dippr),
+                  vc=utility.Const(value=units.to_si(0.07459, 'm3/kmol'),
+                                   unit=units.to_si_unit('m3/kmol'),
+                                   source=refs.dippr),
+                  acentric=utility.Const(value=0.0,
+                                         unit='dimensionless',
+                                         source=refs.dippr))
+
+water = Comp(name='water',
+                  cas_no='',
+                  formula='H2O',
+                  mw=utility.Const(value=18.01528,
+                                   unit='g/mol',
+                                   source=refs.dippr),
+                  pvap_l=utility.RiedelPvap(a=73.649,
+                                            b=-7258.2,
+                                            c=-7.3037,
+                                            d=4.1653*10**-6.0,
+                                            e=2.0,
+                                            unit='Pa',
+                                            t_unit='K',
+                                            t_min=273.16,
+                                            t_max=647.1,
+                                            source=refs.dippr),
+                  den_l=utility.IAPWSDenL(),
+                  tc=utility.Const(value=647.096,
+                                   unit='K',
+                                   source=refs.dippr),
+                  pc=utility.Const(value=units.to_si(22.064, 'MPa'),
+                                   unit=units.to_si_unit('MPa'),
+                                   source=refs.dippr),
+                  vc=utility.Const(value=units.to_si(0.0559472, 'm3/kmol'),
+                                   unit=units.to_si_unit('m3/kmol'),
+                                   source=refs.dippr),
+                  acentric=utility.Const(value=0.344861,
+                                         unit='dimensionless',
+                                         source=refs.dippr))
+
+methanol = Comp(name='methanol',
+                     cas_no='67-56-1',
+                     formula='CH3OH',
+                     mw=utility.Const(value=32.04186,
+                                      unit='g/mol',
+                                      source=refs.dippr),
+                     pvap_l=utility.RiedelPvap(a=82.718,
+                                               b=-6904.5,
+                                               c=-8.8622,
+                                               d=7.4664*10**-6.0,
+                                               e=2.0,
+                                               unit='Pa',
+                                               t_unit='K',
+                                               t_min=175.47,
+                                               t_max=512.5,
+                                               source=refs.dippr),
+                     den_l=utility.DaubertDenL(a=2.3267,
+                                               b=0.27073,
+                                               c=512.5,
+                                               d=0.24713,
+                                               unit='mol/dm3',
+                                               t_unit='K',
+                                               t_min=175.47,
+                                               t_max=512.5,
+                                               source=refs.dippr),
+                     tc=utility.Const(value=512.5,
+                                      unit='K',
+                                      source=refs.dippr),
+                     pc=utility.Const(value=units.to_si(8.084, 'MPa'),
+                                      unit=units.to_si_unit('MPa'),
+                                      source=refs.dippr),
+                     vc=utility.Const(value=units.to_si(0.117, 'm3/kmol'),
+                                      unit=units.to_si_unit('m3/kmol'),
+                                      source=refs.dippr),
+                     acentric=utility.Const(value=0.565831,
+                                            unit='dimensionless',
+                                            source=refs.dippr))
+
+acetone = Comp(name='acetone',
+                    cas_no='67-64-1',
+                    formula='C3H6O',
+                    mw=utility.Const(value=58.07914,
+                                     unit='g/mol',
+                                     source=refs.dippr),
+                    pvap_l=utility.RiedelPvap(a=69.006,
+                                              b=-5599.6,
+                                              c=-7.0985,
+                                              d=6.2237*10**-6.0,
+                                              e=2.0,
+                                              unit='Pa',
+                                              t_unit='K',
+                                              t_min=178.45,
+                                              t_max=508.2),
+                    den_l=utility.DaubertDenL(a=1.2332,
+                                              b=0.25886,
+                                              c=508.2,
+                                              d=0.2913,
+                                              unit='mol/dm3',
+                                              t_unit='K',
+                                              t_min=178.45,
+                                              t_max=508.2,
+                                              source=refs.dippr),
+                    tc=utility.Const(value=508.2,
+                                     unit='K',
+                                     source=refs.dippr),
+                    pc=utility.Const(value=units.to_si(4.701, 'MPa'),
+                                     unit=units.to_si_unit('MPa'),
+                                     source=refs.dippr),
+                    vc=utility.Const(value=units.to_si(0.209, 'm3/kmol'),
+                                     unit=units.to_si_unit('m3/kmol'),
+                                     source=refs.dippr),
+                    acentric=utility.Const(value=0.306527,
+                                           unit='dimensionless',
+                                           source=refs.dippr))
