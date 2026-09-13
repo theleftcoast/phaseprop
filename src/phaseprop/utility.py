@@ -63,8 +63,16 @@ class Callback(list):
 class Const(float):
     """Constant with metadata.
 
-    Notes
-    -----
+    Parameters
+    ----------
+    unit : str, optional
+        Unit associated with the constant.
+    uncertainty : float, optional
+        Uncertainty associated with the constant.
+    source : str, optional
+        Source for the constant (ACS citation format preferred).
+    notes : str, optional
+        Notes associated with the constant.
     """
     def __new__(cls,
                 value: float,
@@ -103,7 +111,7 @@ class Const(float):
             self._unit = value
             return
         else:
-            raise ValueError("unit is not defined.")
+            raise ValueError("Unit is not defined.")
 
 
 @dataclasses.dataclass(frozen=True, eq=True)
