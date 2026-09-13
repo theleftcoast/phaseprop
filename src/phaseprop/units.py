@@ -212,7 +212,7 @@ def to_si(value: float, unit: str) -> float:
     elif unit in TEMPERATURE:
         return TEMPERATURE[unit](value)
     else:
-        raise ValueError("unit is not defined.")
+        raise ValueError("Unit is not defined.")
 
 
 def to_si_unit(unit: str) -> str:
@@ -231,4 +231,4 @@ def to_si_unit(unit: str) -> str:
     for si_unit, unit_dict in SI_UNITS.items():
         if unit in unit_dict:
             return si_unit
-    raise ValueError("unit is not defined.")
+    raise ValueError("Unit is not defined.")
