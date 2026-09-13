@@ -4,7 +4,7 @@ import dataclasses
 import typing
 import numpy as np
 import numpy.typing as npt
-import units
+import src.phaseprop.units as units
 
 
 class Callback(list):

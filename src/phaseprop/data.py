@@ -2,8 +2,8 @@
 
 import numpy as np
 import dataclasses
-import utility
-import const
+import src.phaseprop.utility as utility
+import src.phaseprop.const as const
 import typing
 import json
 
