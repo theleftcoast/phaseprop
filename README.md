@@ -1,1 +1,0 @@
-This library is an object-oriented implementation of SRK, PR, CPA, and PC-SAFT for multiphase equilibrium calculations.

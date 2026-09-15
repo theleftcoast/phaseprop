@@ -14,6 +14,7 @@ class Callback(list):
     ----------
     [1] http://web.archive.org/web/20060612061259/http://www.suttoncourtenay.org.uk/duncan/accu/pythonpatterns.html
     """
+
     def __init__(self):
         self._delegates = []
 
@@ -74,20 +75,25 @@ class Const(float):
     notes : str, optional
         Notes associated with the constant.
     """
-    def __new__(cls,
-                value: float,
-                unit: typing.Optional[str] = None,
-                uncertainty: typing.Optional[float] = None,
-                source: typing.Optional[str] = None,
-                notes: typing.Optional[str] = None):
+
+    def __new__(
+        cls,
+        value: float,
+        unit: typing.Optional[str] = None,
+        uncertainty: typing.Optional[float] = None,
+        source: typing.Optional[str] = None,
+        notes: typing.Optional[str] = None,
+    ):
         return float.__new__(cls, value)
 
-    def __init__(self,
-                 value: float,
-                 unit: typing.Optional[str] = None,
-                 uncertainty: typing.Optional[float] = None,
-                 source: typing.Optional[str] = None,
-                 notes: typing.Optional[str] = None):
+    def __init__(
+        self,
+        value: float,
+        unit: typing.Optional[str] = None,
+        uncertainty: typing.Optional[float] = None,
+        source: typing.Optional[str] = None,
+        notes: typing.Optional[str] = None,
+    ):
         float.__init__(value)
         self.unit = unit
         self.uncertainty = uncertainty
@@ -184,13 +190,14 @@ class RiedelPvap(object):
     [3] Rowley, R. L.; Wilding, W. V.; Oscarson, J. L.; Knotts, T. A.; Giles, N. F. DIPPR Data Compilation of Pure
     Chemical Properties; Design Institute for Physical Properties, AIChE: New York, NY, 2016.
     """
+
     a: float = 0.0
     b: float = 0.0
     c: float = 0.0
     d: float = 0.0
     e: float = 0.0
-    unit: str = 'Pa'
-    t_unit: str = 'K'
+    unit: str = "Pa"
+    t_unit: str = "K"
     t_min: typing.Optional[float] = None
     t_max: typing.Optional[float] = None
     rmse: typing.Optional[float] = None
@@ -199,26 +206,19 @@ class RiedelPvap(object):
     source: typing.Optional[str] = None
     notes: typing.Optional[str] = None
 
-    def __post_init__(self):
-        if self.unit not in units.UNITS:
-            raise ValueError("unit is not defined.")
-        elif self.t_unit not in units.TEMPERATURE:
-            raise ValueError("t_unit is not defined.")
-
     def _t_conv(self, t: float) -> float:
         """Convert temperature from Kelvin to t_unit."""
-        conversion = {'F': lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
-                      'R': lambda t: t * 1.8,
-                      'C': lambda t: t - 273.15,
-                      'K': lambda t: t}
+        conversion = {
+            "F": lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
+            "R": lambda t: t * 1.8,
+            "C": lambda t: t - 273.15,
+            "K": lambda t: t,
+        }
         return conversion[self.t_unit](t)
 
     def _corel(self, t: float) -> float:
         """Riedel vapor pressure correlation."""
-        return np.exp(self.a +
-                      self.b / t +
-                      self.c * np.log(t) +
-                      self.d * t ** self.e)
+        return np.exp(self.a + self.b / t + self.c * np.log(t) + self.d * t**self.e)
 
     def __call__(self, t: float) -> float:
         """Evaluate vapor pressure.
@@ -308,12 +308,13 @@ class DaubertDenL(object):
     [4] Yaws, C. L. Thermophysical properties of chemicals and hydrocarbons, 2nd ed.; Gulf Professional Publishing is an
     imprint of Elsevier: Kidlington, Oxford, 2014.
     """
+
     a: float = 0.0
     b: float = 0.0
     c: float = 0.0
     d: float = 0.0
-    unit: str = 'mol/m3'
-    t_unit: str = 'K'
+    unit: str = "mol/m3"
+    t_unit: str = "K"
     t_min: typing.Optional[float] = None
     t_max: typing.Optional[float] = None
     rmse: typing.Optional[float] = None
@@ -324,10 +325,12 @@ class DaubertDenL(object):
 
     def _t_conv(self, t: float) -> float:
         """Convert temperature from Kelvin to t_unit."""
-        conversion = {'F': lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
-                      'R': lambda t: t * 1.8,
-                      'C': lambda t: t - 273.15,
-                      'K': lambda t: t}
+        conversion = {
+            "F": lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
+            "R": lambda t: t * 1.8,
+            "C": lambda t: t - 273.15,
+            "K": lambda t: t,
+        }
         return conversion[self.t_unit](t)
 
     def _corel(self, t: float) -> float:
@@ -422,6 +425,7 @@ class IAPWSDenL(object):
     [1] Sengers, J. M. H. L; Dooley, B. Revised Supplementary Release on Saturation Properties of Ordinary Water
     Substance; IAPWS, 1992.
     """
+
     a: float = 17.874
     b: float = 35.618
     c: float = 19.655
@@ -430,8 +434,8 @@ class IAPWSDenL(object):
     f: float = -813.56
     g: float = -17421000
     h: float = 647.096
-    unit: str = 'mol/dm3'
-    t_unit: str = 'K'
+    unit: str = "mol/dm3"
+    t_unit: str = "K"
     t_min: float = 273.16
     t_max: float = 647.096
     rmse: typing.Optional[float] = None
@@ -445,21 +449,25 @@ class IAPWSDenL(object):
 
     def _t_conv(self, t: float) -> float:
         """Convert temperature from Kelvin to t_unit."""
-        conversion = {'F': lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
-                      'R': lambda t: t * 1.8,
-                      'C': lambda t: t - 273.15,
-                      'K': lambda t: t}
+        conversion = {
+            "F": lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
+            "R": lambda t: t * 1.8,
+            "C": lambda t: t - 273.15,
+            "K": lambda t: t,
+        }
         return conversion[self.t_unit](t)
 
     def _corel(self, t: float) -> float:
         """IAPWS liquid density correlation."""
-        return self.a + \
-               self.b * self._tau(t) ** (1.0/3.0) + \
-               self.c * self._tau(t) ** (2.0/3.0) + \
-               self.d * self._tau(t) ** (5.0/3.0) + \
-               self.e * self._tau(t) ** (16.0/3.0) + \
-               self.f * self._tau(t) ** (43.0/3.0) + \
-               self.g * self._tau(t) ** (110.0/3.0)
+        return (
+            self.a
+            + self.b * self._tau(t) ** (1.0 / 3.0)
+            + self.c * self._tau(t) ** (2.0 / 3.0)
+            + self.d * self._tau(t) ** (5.0 / 3.0)
+            + self.e * self._tau(t) ** (16.0 / 3.0)
+            + self.f * self._tau(t) ** (43.0 / 3.0)
+            + self.g * self._tau(t) ** (110.0 / 3.0)
+        )
 
     def __call__(self, t: float) -> float:
         """Evaluate liquid density.
@@ -551,13 +559,14 @@ class PerryHvap(object):
     [4] Yaws, C. L. Thermophysical properties of chemicals and hydrocarbons, 2nd ed.; Gulf Professional Publishing is an
     imprint of Elsevier: Kidlington, Oxford, 2014.
     """
+
     a: float = 0.0
     b: float = 0.0
     c: float = 0.0
     d: float = 0.0
     e: float = 0.0
-    unit: str = 'J/mol'
-    t_unit: str = 'K'
+    unit: str = "J/mol"
+    t_unit: str = "K"
     t_min: typing.Optional[float] = None
     t_max: typing.Optional[float] = None
     rmse: typing.Optional[float] = None
@@ -568,10 +577,12 @@ class PerryHvap(object):
 
     def _t_conv(self, t: float) -> float:
         """Convert temperature from Kelvin to t_unit."""
-        conversion = {'F': lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
-                      'R': lambda t: t * 1.8,
-                      'C': lambda t: t - 273.15,
-                      'K': lambda t: t}
+        conversion = {
+            "F": lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
+            "R": lambda t: t * 1.8,
+            "C": lambda t: t - 273.15,
+            "K": lambda t: t,
+        }
         return conversion[self.t_unit](t)
 
     def _tr(self, t: float) -> float:
@@ -580,9 +591,9 @@ class PerryHvap(object):
 
     def _corel(self, t: float) -> float:
         """DIPPR enthalpy of vaporization."""
-        return self.a * (1.0 - self._tr(t)) ** (self.b +
-                                                self.c * self._tr(t) +
-                                                self.d * self._tr(t)**2.0)
+        return self.a * (1.0 - self._tr(t)) ** (
+            self.b + self.c * self._tr(t) + self.d * self._tr(t) ** 2.0
+        )
 
     def __call__(self, t: float) -> float:
         """Evaluate enthalpy of vaporization.
@@ -668,13 +679,14 @@ class PolyCpL(object):
     [3] Rowley, R. L.; Wilding, W. V.; Oscarson, J. L.; Knotts, T. A.; Giles, N. F. DIPPR Data Compilation of Pure
     Chemical Properties; Design Institute for Physical Properties, AIChE: New York, NY, 2016.
     """
+
     a: float = 0.0
     b: float = 0.0
     c: float = 0.0
     d: float = 0.0
     e: float = 0.0
-    unit: str = 'J/mol.K'
-    t_unit: str = 'K'
+    unit: str = "J/mol.K"
+    t_unit: str = "K"
     t_min: typing.Optional[float] = None
     t_max: typing.Optional[float] = None
     rmse: typing.Optional[float] = None
@@ -685,15 +697,17 @@ class PolyCpL(object):
 
     def _t_conv(self, t: float) -> float:
         """Convert temperature from Kelvin to t_unit."""
-        conversion = {'F': lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
-                      'R': lambda t: t * 1.8,
-                      'C': lambda t: t - 273.15,
-                      'K': lambda t: t}
+        conversion = {
+            "F": lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
+            "R": lambda t: t * 1.8,
+            "C": lambda t: t - 273.15,
+            "K": lambda t: t,
+        }
         return conversion[self.t_unit](t)
 
     def _corel(self, t: float) -> float:
         """Polynomial heat capacity correlation."""
-        return self.a + self.b * t + self.c * t ** 2.0 + self.d * t ** 3.0 + self.e * t ** 4.0
+        return self.a + self.b * t + self.c * t**2.0 + self.d * t**3.0 + self.e * t**4.0
 
     def __call__(self, t: float) -> float:
         """Evaluate liquid heat capacity.
@@ -777,13 +791,14 @@ class DIPPRCpL(object):
     [2] Rowley, R. L.; Wilding, W. V.; Oscarson, J. L.; Knotts, T. A.; Giles, N. F. DIPPR Data Compilation of Pure
     Chemical Properties; Design Institute for Physical Properties, AIChE: New York, NY, 2016.
     """
+
     a: float = 0.0
     b: float = 0.0
     c: float = 0.0
     d: float = 0.0
     e: float = 0.0
-    unit: str = 'J/mol.K'
-    t_unit: str = 'K'
+    unit: str = "J/mol.K"
+    t_unit: str = "K"
     t_min: typing.Optional[float] = None
     t_max: typing.Optional[float] = None
     rmse: typing.Optional[float] = None
@@ -794,10 +809,12 @@ class DIPPRCpL(object):
 
     def _t_conv(self, t: float) -> float:
         """Convert temperature from Kelvin to t_unit."""
-        conversion = {'F': lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
-                      'R': lambda t: t * 1.8,
-                      'C': lambda t: t - 273.15,
-                      'K': lambda t: t}
+        conversion = {
+            "F": lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
+            "R": lambda t: t * 1.8,
+            "C": lambda t: t - 273.15,
+            "K": lambda t: t,
+        }
         return conversion[self.t_unit](t)
 
     def _tau(self, t: float) -> float:
@@ -806,13 +823,15 @@ class DIPPRCpL(object):
 
     def _corel(self, t: float) -> float:
         """DIPPR heat capacity correlation."""
-        return (self.a ** 2.0) / self._tau(t) + \
-               self.b - \
-               2.0 * self.a * self.c * self._tau(t) - \
-               (self.a * self.d * self._tau(t) ** 2.0) - \
-               (self.c ** 2.0) * (self._tau(t) ** 3.0) / 3.0 - \
-               (self.c * self.d * self._tau(t) ** 4.0) / 2.0 - \
-               (self.d ** 2.0) * (self._tau(t) ** 5.0) / 5.0
+        return (
+            (self.a**2.0) / self._tau(t)
+            + self.b
+            - 2.0 * self.a * self.c * self._tau(t)
+            - (self.a * self.d * self._tau(t) ** 2.0)
+            - (self.c**2.0) * (self._tau(t) ** 3.0) / 3.0
+            - (self.c * self.d * self._tau(t) ** 4.0) / 2.0
+            - (self.d**2.0) * (self._tau(t) ** 5.0) / 5.0
+        )
 
     def __call__(self, t: float) -> float:
         """Evaluate liquid heat capacity.
@@ -896,13 +915,14 @@ class PolyCpIg(object):
     [1] Poling, B.E.; Praunitz, J.M.; O'Connell, J.P. The properties of gases and liquids, 5th ed.; McGraw-Hill, 2000.
     [2] Green, D.; Southard, M. Perry's Chemical Engineers' Handbook, 9th ed.; McGraw Hill Education: New York, 2019.
     """
+
     a: float = 0.0
     b: float = 0.0
     c: float = 0.0
     d: float = 0.0
     e: float = 0.0
-    unit: str = 'J/mol.K'
-    t_unit: str = 'K'
+    unit: str = "J/mol.K"
+    t_unit: str = "K"
     t_min: typing.Optional[float] = None
     t_max: typing.Optional[float] = None
     rmse: typing.Optional[float] = None
@@ -913,15 +933,17 @@ class PolyCpIg(object):
 
     def _t_conv(self, t: float) -> float:
         """Convert temperature from Kelvin to t_unit."""
-        conversion = {'F': lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
-                      'R': lambda t: t * 1.8,
-                      'C': lambda t: t - 273.15,
-                      'K': lambda t: t}
+        conversion = {
+            "F": lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
+            "R": lambda t: t * 1.8,
+            "C": lambda t: t - 273.15,
+            "K": lambda t: t,
+        }
         return conversion[self.t_unit](t)
 
     def _corel(self, t: float) -> float:
         """Polynomial heat capacity correlation."""
-        return self.a + self.b * t + self.c * t ** 2.0 + self.d * t ** 3.0 + self.e * t ** 4.0
+        return self.a + self.b * t + self.c * t**2.0 + self.d * t**3.0 + self.e * t**4.0
 
     def __call__(self, t: float) -> float:
         """Evaluate ideal gas heat capacity.
@@ -951,11 +973,13 @@ class PolyCpIg(object):
         float
             Ideal gas enthalpy evaluated at 't' (in 'J/mol').
         """
-        return self.a * t + \
-               (self.b * t ** 2.0) / 2.0 + \
-               (self.c * t ** 3.0) / 3.0 + \
-               (self.d * t ** 4.0) / 4.0 + \
-               (self.e * t ** 5.0) / 5.0
+        return (
+            self.a * t
+            + (self.b * t**2.0) / 2.0
+            + (self.c * t**3.0) / 3.0
+            + (self.d * t**4.0) / 4.0
+            + (self.e * t**5.0) / 5.0
+        )
 
     def entropy(self, t: float) -> float:
         """Evaluate ideal gas entropy.
@@ -970,8 +994,12 @@ class PolyCpIg(object):
         float
             Ideal gas entropy at 't' (in 'J/mol.K').
         """
-        return self.a * np.log(t) + self.b * t + \
-               ((t ** 2.0) / 12.0) * (6.0 * self.c + 4.0 * self.d * t + 3.0 * self.e * t ** 2.0)
+        return (
+            self.a * np.log(t)
+            + self.b * t
+            + ((t**2.0) / 12.0)
+            * (6.0 * self.c + 4.0 * self.d * t + 3.0 * self.e * t**2.0)
+        )
 
 
 @dataclasses.dataclass(frozen=True, eq=True)
@@ -1049,13 +1077,14 @@ class AlyLeeCpIg(object):
     [3] Rowley, R. L.; Wilding, W. V.; Oscarson, J. L.; Knotts, T. A.; Giles, N. F. DIPPR Data Compilation of Pure
     Chemical Properties; Design Institute for Physical Properties, AIChE: New York, NY, 2016.
     """
+
     a: float = 0.0
     b: float = 0.0
     c: float = 0.0
     d: float = 0.0
     e: float = 0.0
-    unit: str = 'J/mol.K'
-    t_unit: str = 'K'
+    unit: str = "J/mol.K"
+    t_unit: str = "K"
     t_min: typing.Optional[float] = None
     t_max: typing.Optional[float] = None
     rmse: typing.Optional[float] = None
@@ -1066,17 +1095,21 @@ class AlyLeeCpIg(object):
 
     def _t_conv(self, t: float) -> float:
         """Convert temperature from Kelvin to t_unit."""
-        conversion = {'F': lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
-                      'R': lambda t: t * 1.8,
-                      'C': lambda t: t - 273.15,
-                      'K': lambda t: t}
+        conversion = {
+            "F": lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
+            "R": lambda t: t * 1.8,
+            "C": lambda t: t - 273.15,
+            "K": lambda t: t,
+        }
         return conversion[self.t_unit](t)
 
     def _corel(self, t: float) -> float:
         """Aly and Lee heat capacity correlation."""
-        return self.a + \
-               self.b * ((self.c / t) / np.sinh(self.c / t)) ** 2.0 + \
-               self.d * ((self.e / t) / np.cosh(self.e / t)) ** 2.0
+        return (
+            self.a
+            + self.b * ((self.c / t) / np.sinh(self.c / t)) ** 2.0
+            + self.d * ((self.e / t) / np.cosh(self.e / t)) ** 2.0
+        )
 
     def __call__(self, t: float) -> float:
         """Evaluate ideal gas heat capacity.
@@ -1106,9 +1139,11 @@ class AlyLeeCpIg(object):
         float
             Ideal gas enthalpy evaluated at 't' (in 'J/mol').
         """
-        return self.a * t + \
-               self.b * self.c / np.tanh(self.c / t) - \
-               self.d * self.e * np.tanh(self.e / t)
+        return (
+            self.a * t
+            + self.b * self.c / np.tanh(self.c / t)
+            - self.d * self.e * np.tanh(self.e / t)
+        )
 
     def entropy(self, t: float) -> float:
         """Evaluate ideal gas entropy.
@@ -1123,9 +1158,13 @@ class AlyLeeCpIg(object):
         float
             Ideal gas entropy at 't' (in 'J/mol.K').
         """
-        return self.a * np.log(t) + \
-               self.b * ((self.c/t) / np.tanh(self.c/t) - np.log(np.sinh(self.c/t))) - \
-               self.d * ((self.e/t) * np.tanh(self.e/t) - np.log(np.cosh(self.e/t)))
+        return (
+            self.a * np.log(t)
+            + self.b
+            * ((self.c / t) / np.tanh(self.c / t) - np.log(np.sinh(self.c / t)))
+            - self.d
+            * ((self.e / t) * np.tanh(self.e / t) - np.log(np.cosh(self.e / t)))
+        )
 
 
 @dataclasses.dataclass(frozen=True, eq=True)
@@ -1199,13 +1238,14 @@ class AndradeViscL(object):
     [3] Rowley, R. L.; Wilding, W. V.; Oscarson, J. L.; Knotts, T. A.; Giles, N. F. DIPPR Data Compilation of Pure
     Chemical Properties; Design Institute for Physical Properties, AIChE: New York, NY, 2016.
     """
+
     a: float = 0.0
     b: float = 0.0
     c: float = 0.0
     d: float = 0.0
     e: float = 0.0
-    unit: str = 'Pa.s'
-    t_unit: str = 'K'
+    unit: str = "Pa.s"
+    t_unit: str = "K"
     t_min: typing.Optional[float] = None
     t_max: typing.Optional[float] = None
     rmse: typing.Optional[float] = None
@@ -1216,18 +1256,17 @@ class AndradeViscL(object):
 
     def _t_conv(self, t: float) -> float:
         """Convert temperature from Kelvin to t_unit."""
-        conversion = {'F': lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
-                      'R': lambda t: t * 1.8,
-                      'C': lambda t: t - 273.15,
-                      'K': lambda t: t}
+        conversion = {
+            "F": lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
+            "R": lambda t: t * 1.8,
+            "C": lambda t: t - 273.15,
+            "K": lambda t: t,
+        }
         return conversion[self.t_unit](t)
 
     def _corel(self, t: float) -> float:
         """Generalized Andrade saturated liquid viscosity correlation."""
-        return np.exp(self.a +
-                      self.b / t +
-                      self.c * np.log(t) +
-                      self.d * t ** self.e)
+        return np.exp(self.a + self.b / t + self.c * np.log(t) + self.d * t**self.e)
 
     def __call__(self, t: float) -> float:
         """Evaluate saturated liquid viscosity.
@@ -1317,12 +1356,13 @@ class KineticViscIg(object):
     [3] Rowley, R. L.; Wilding, W. V.; Oscarson, J. L.; Knotts, T. A.; Giles, N. F. DIPPR Data Compilation of Pure
     Chemical Properties; Design Institute for Physical Properties, AIChE: New York, NY, 2016.
     """
+
     a: float = 0.0
     b: float = 0.0
     c: float = 0.0
     d: float = 0.0
-    unit: str = 'Pa.s'
-    t_unit: str = 'K'
+    unit: str = "Pa.s"
+    t_unit: str = "K"
     t_min: typing.Optional[float] = None
     t_max: typing.Optional[float] = None
     rmse: typing.Optional[float] = None
@@ -1333,15 +1373,17 @@ class KineticViscIg(object):
 
     def _t_conv(self, t: float) -> float:
         """Convert temperature from Kelvin to t_unit."""
-        conversion = {'F': lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
-                      'R': lambda t: t * 1.8,
-                      'C': lambda t: t - 273.15,
-                      'K': lambda t: t}
+        conversion = {
+            "F": lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
+            "R": lambda t: t * 1.8,
+            "C": lambda t: t - 273.15,
+            "K": lambda t: t,
+        }
         return conversion[self.t_unit](t)
 
     def _corel(self, t: float) -> float:
         """Generalized kinetic theory vapor viscosity correlation."""
-        return (self.a * t ** self.b) / (1.0 + self.c / t + self.d / t ** 2.0)
+        return (self.a * t**self.b) / (1.0 + self.c / t + self.d / t**2.0)
 
     def __call__(self, t: float) -> float:
         """Evaluate ideal gas viscosity.
@@ -1427,13 +1469,14 @@ class PolyTcondL(object):
     [2] Rowley, R. L.; Wilding, W. V.; Oscarson, J. L.; Knotts, T. A.; Giles, N. F. DIPPR Data Compilation of Pure
     Chemical Properties; Design Institute for Physical Properties, AIChE: New York, NY, 2016.
     """
+
     a: float = 0.0
     b: float = 0.0
     c: float = 0.0
     d: float = 0.0
     e: float = 0.0
-    unit: str = 'W/(m.K)'
-    t_unit: str = 'K'
+    unit: str = "W/(m.K)"
+    t_unit: str = "K"
     t_min: typing.Optional[float] = None
     t_max: typing.Optional[float] = None
     rmse: typing.Optional[float] = None
@@ -1444,15 +1487,17 @@ class PolyTcondL(object):
 
     def _t_conv(self, t: float) -> float:
         """Convert temperature from Kelvin to t_unit."""
-        conversion = {'F': lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
-                      'R': lambda t: t * 1.8,
-                      'C': lambda t: t - 273.15,
-                      'K': lambda t: t}
+        conversion = {
+            "F": lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
+            "R": lambda t: t * 1.8,
+            "C": lambda t: t - 273.15,
+            "K": lambda t: t,
+        }
         return conversion[self.t_unit](t)
 
     def _corel(self, t: float) -> float:
         """Polynomial saturated liquid thermal conductivity correlation."""
-        return self.a + self.b * t + self.c * t ** 2.0 + self.d * t ** 3.0 + self.e * t ** 4.0
+        return self.a + self.b * t + self.c * t**2.0 + self.d * t**3.0 + self.e * t**4.0
 
     def __call__(self, t: float) -> float:
         """Evaluate saturated liquid thermal conductivity.
@@ -1541,12 +1586,13 @@ class KineticTcondIg(object):
     [3] Rowley, R. L.; Wilding, W. V.; Oscarson, J. L.; Knotts, T. A.; Giles, N. F. DIPPR Data Compilation of Pure
     Chemical Properties; Design Institute for Physical Properties, AIChE: New York, NY, 2016.
     """
+
     a: float = 0.0
     b: float = 0.0
     c: float = 0.0
     d: float = 0.0
-    unit: str = 'W/m.K'
-    t_unit: str = 'K'
+    unit: str = "W/m.K"
+    t_unit: str = "K"
     t_min: typing.Optional[float] = None
     t_max: typing.Optional[float] = None
     rmse: typing.Optional[float] = None
@@ -1557,15 +1603,17 @@ class KineticTcondIg(object):
 
     def _t_conv(self, t: float) -> float:
         """Convert temperature from Kelvin to t_unit."""
-        conversion = {'F': lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
-                      'R': lambda t: t * 1.8,
-                      'C': lambda t: t - 273.15,
-                      'K': lambda t: t}
+        conversion = {
+            "F": lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
+            "R": lambda t: t * 1.8,
+            "C": lambda t: t - 273.15,
+            "K": lambda t: t,
+        }
         return conversion[self.t_unit](t)
 
     def _corel(self, t: float) -> float:
         """Generalized kinetic theory vapor thermal conductivity correlation."""
-        return (self.a * t ** self.b) / (1.0 + self.c / t + self.d / t ** 2.0)
+        return (self.a * t**self.b) / (1.0 + self.c / t + self.d / t**2.0)
 
     def __call__(self, t: float) -> float:
         """Evaluate ideal gas thermal conductivity.
@@ -1649,12 +1697,13 @@ class PolyTcondIg(object):
     [2] Rowley, R. L.; Wilding, W. V.; Oscarson, J. L.; Knotts, T. A.; Giles, N. F. DIPPR Data Compilation of Pure
     Chemical Properties; Design Institute for Physical Properties, AIChE: New York, NY, 2016.
     """
+
     a: float = 0.0
     b: float = 0.0
     c: float = 0.0
     d: float = 0.0
-    unit: str = 'W/m.K'
-    t_unit: str = 'K'
+    unit: str = "W/m.K"
+    t_unit: str = "K"
     t_min: typing.Optional[float] = None
     t_max: typing.Optional[float] = None
     rmse: typing.Optional[float] = None
@@ -1665,15 +1714,17 @@ class PolyTcondIg(object):
 
     def _t_conv(self, t: float) -> float:
         """Convert temperature from Kelvin to t_unit."""
-        conversion = {'F': lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
-                      'R': lambda t: t * 1.8,
-                      'C': lambda t: t - 273.15,
-                      'K': lambda t: t}
+        conversion = {
+            "F": lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
+            "R": lambda t: t * 1.8,
+            "C": lambda t: t - 273.15,
+            "K": lambda t: t,
+        }
         return conversion[self.t_unit](t)
 
     def _corel(self, t: float) -> float:
         """Polynomial vapor thermal conductivity correlation."""
-        return self.a + self.b * t + self.c * t ** 2.0 + self.d * t ** 3.0
+        return self.a + self.b * t + self.c * t**2.0 + self.d * t**3.0
 
     def __call__(self, t: float) -> float:
         """Evaluate ideal gas thermal conductivity.
@@ -1756,12 +1807,13 @@ class SurfTen(object):
     [2] Yaws, C. L. Thermophysical properties of chemicals and hydrocarbons, 2nd ed.; Gulf Professional Publishing is an
     imprint of Elsevier: Kidlington, Oxford, 2014.
     """
+
     a: float = 0.0
     b: float = 0.0
     c: float = 0.0
     d: float = 0.0
-    unit: str = 'N/m'
-    t_unit: str = 'K'
+    unit: str = "N/m"
+    t_unit: str = "K"
     t_min: typing.Optional[float] = None
     t_max: typing.Optional[float] = None
     rmse: typing.Optional[float] = None
@@ -1772,10 +1824,12 @@ class SurfTen(object):
 
     def _t_conv(self, t: float) -> float:
         """Convert temperature from Kelvin to t_unit."""
-        conversion = {'F': lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
-                      'R': lambda t: t * 1.8,
-                      'C': lambda t: t - 273.15,
-                      'K': lambda t: t}
+        conversion = {
+            "F": lambda t: (t - 273.15) * 9.0 / 5.0 + 32.0,
+            "R": lambda t: t * 1.8,
+            "C": lambda t: t - 273.15,
+            "K": lambda t: t,
+        }
         return conversion[self.t_unit](t)
 
     def _corel(self, t: float) -> float:
@@ -1798,12 +1852,18 @@ class SurfTen(object):
         return units.to_si(self._corel(self._t_conv(t)), unit=self.unit)
 
 
-def derivative(func: typing.Callable, x: npt.NDArray, args: list, kwargs: dict, delta: float = 1e-5) -> npt.NDArray:
+def derivative(
+    func: typing.Callable, x: npt.NDArray, args: list, kwargs: dict, delta: float = 1e-5
+) -> npt.NDArray:
     """Derivative of a scalar function."""
-    return (func(x + delta, *args, **kwargs) - func(x + delta, *args, **kwargs)) / (2 * delta)
+    return (func(x + delta, *args, **kwargs) - func(x + delta, *args, **kwargs)) / (
+        2 * delta
+    )
 
 
-def gradient(func: typing.Callable, x: npt.NDArray, args: list, kwargs: dict, delta: float = 1e-5) -> npt.NDArray:
+def gradient(
+    func: typing.Callable, x: npt.NDArray, args: list, kwargs: dict, delta: float = 1e-5
+) -> npt.NDArray:
     """Gradient of a scalar function."""
     n = len(x)
     result = np.zeros(n)
@@ -1820,7 +1880,9 @@ def gradient(func: typing.Callable, x: npt.NDArray, args: list, kwargs: dict, de
     return result
 
 
-def hessian(func: typing.Callable, x: npt.NDArray, args: list, kwargs: dict, delta: float = 1e-5) -> npt.NDArray:
+def hessian(
+    func: typing.Callable, x: npt.NDArray, args: list, kwargs: dict, delta: float = 1e-5
+) -> npt.NDArray:
     """Hessian of a scalar function."""
     n = len(x)
     result = np.zeros((n, n))
@@ -1839,7 +1901,9 @@ def hessian(func: typing.Callable, x: npt.NDArray, args: list, kwargs: dict, del
     return result
 
 
-def jacobian(func: typing.Callable, x: npt.NDArray, args: list, kwargs: dict, delta: float = 1e-5) -> npt.NDArray:
+def jacobian(
+    func: typing.Callable, x: npt.NDArray, args: list, kwargs: dict, delta: float = 1e-5
+) -> npt.NDArray:
     """Jacobian of a vector valued function."""
     nr = len(func(x, *args, **kwargs))
     nc = len(x)
@@ -1848,7 +1912,10 @@ def jacobian(func: typing.Callable, x: npt.NDArray, args: list, kwargs: dict, de
         for j in range(nc):
             ej = np.zeros(nc)
             ej[j] = 1
-            d = (func(x + delta * ej, *args, **kwargs)[i] - func(x - delta * ej, *args, **kwargs)[i]) / (2 * delta)
+            d = (
+                func(x + delta * ej, *args, **kwargs)[i]
+                - func(x - delta * ej, *args, **kwargs)[i]
+            ) / (2 * delta)
             result[i, j] = d
     return result
 
