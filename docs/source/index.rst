@@ -6,7 +6,7 @@
 Phaseprop documentation
 =======================
 
-**Phaseprop** is an object-oriented implementation of SRK, PR, CPA, and PC-SAFT equations of state.  It emphasizes robust flash, critical point, phase envelope, and phase diagram modules to support multiphase equilibrium calculations. 
+**Phaseprop** is an object-oriented implementation of SRK, PR, CPA, and PC-SAFT equations of state.  It emphasizes generalized and robust algorithms for flash, critical point, phase envelope, and phase diagram modules to support multiphase equilibrium calculations. Check out the structure section for further information on philosophy and design choices.
 
 .. note::
 
@@ -22,3 +22,6 @@ Contents
 .. toctree::
 
    usage
+   structure
+   pure_component
+   units

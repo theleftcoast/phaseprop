@@ -1,3 +1,6 @@
+import os
+import sys
+
 # Configuration file for the Sphinx documentation builder.
 #
 # For the full list of built-in configuration values, see the documentation:
@@ -11,10 +14,17 @@ copyright = "2026, John Towne"
 author = "John Towne"
 release = "0.1"
 
+sys.path.insert(0, os.path.abspath("../../src"))
+
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = []
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.imgmath",
+]
 
 templates_path = ["_templates"]
 exclude_patterns = []

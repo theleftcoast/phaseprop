@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Units &#8212; Phaseprop 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=2709fde1"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="phaseprop.units.to_si" href="generated/phaseprop.units.to_si.html" />
+    <link rel="prev" title="Pure Components" href="pure_component.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-phaseprop.units">
+<span id="units"></span><h1>Units<a class="headerlink" href="#module-phaseprop.units" title="Link to this heading">¶</a></h1>
+<p>Module providing unit conversion functionality.</p>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading">¶</a></h2>
+<dl class="simple">
+<dt>MOLECULAR_WEIGHT<span class="classifier">dict</span></dt><dd><p>Keys are units for molecular weight and values are the conversion factor for that unit into Daltons (or ‘g/mol’).</p>
+</dd>
+<dt>AMOUNT<span class="classifier">dict</span></dt><dd><p>Keys are units for amount of substance and values are the conversion factor for that unit into moles.</p>
+</dd>
+<dt>MASS<span class="classifier">dict</span></dt><dd><p>Keys are units for mass and values are the conversion factor for that unit into kilograms.</p>
+</dd>
+<dt>LENGTH<span class="classifier">dict</span></dt><dd><p>Keys are units for length and values are the conversion factor for that unit into meters).</p>
+</dd>
+<dt>AREA<span class="classifier">dict</span></dt><dd><p>Keys are units for area and the values are the conversion factor for that unit into square meters.</p>
+</dd>
+<dt>VOLUME<span class="classifier">dict</span></dt><dd><p>Keys are units for volume and values are the conversion factor for that unit into cubic meters.</p>
+</dd>
+<dt>TEMPERATURE<span class="classifier">dict</span></dt><dd><p>Keys are units for temperature and values are lambda functions (func(x) -&gt; t) which convert that unit into Kelvin.</p>
+</dd>
+<dt>FORCE<span class="classifier">dict</span></dt><dd><p>Keys are units for force and values are the conversion factor for that unit into Newtons.</p>
+</dd>
+<dt>PRESSURE<span class="classifier">dict</span></dt><dd><p>Keys are units for pressure and values are the conversion factor for that unit into Pascals.</p>
+</dd>
+<dt>DENSITY<span class="classifier">dict</span></dt><dd><p>Keys are units for density and values are the conversion factor for that unit into kilograms per cubic meter.</p>
+</dd>
+<dt>MOLAR_DENSITY<span class="classifier">dict</span></dt><dd><p>Keys are units for molar density and values are the conversion factor for that unit into moles per cubic meter.</p>
+</dd>
+<dt>MOLAR_VOLUME<span class="classifier">dict</span></dt><dd><p>Keys are units for molar volume and values are the conversion factor for that unit into cubic meter per mole.</p>
+</dd>
+<dt>ENERGY<span class="classifier">dict</span></dt><dd><p>Keys are units for energy and values are the conversion factor for that unit into Joules.</p>
+</dd>
+<dt>HEAT_OF_VAPORIZATION<span class="classifier">dict</span></dt><dd><p>Keys are units for heat of vaporization and values are the conversion factor for that unit into Joules per mole</p>
+</dd>
+<dt>HEAT_CAPACITY<span class="classifier">dict</span></dt><dd><p>Keys are units for heat capacity and values are the conversion factor for that unit into Joules per mole-kelvin.</p>
+</dd>
+<dt>VISCOSITY<span class="classifier">dict</span></dt><dd><p>Keys are units for viscosity and values are the conversion factor for that unit into Pascal-second.</p>
+</dd>
+<dt>THERMAL_CONDUCTIVITY<span class="classifier">dict</span></dt><dd><p>Keys are units for thermal conductivity and values are the conversion factor for that unit into Watts per
+meter-Kelvin.</p>
+</dd>
+<dt>SURFACE_TENSION<span class="classifier">dict</span></dt><dd><p>Keys are units for surface tension and values are the conversion factor for that unit into Newtons per meter.</p>
+</dd>
+<dt>DIMENSIONLESS<span class="classifier">dict</span></dt><dd><p>Key and value represents dimensionless quantities.</p>
+</dd>
+<dt>UNITS<span class="classifier">dict</span></dt><dd><p>Combination of all unit conversion dictionaries.  Keys are units and values are the conversion factor for that
+unit into the corresponding SI unit.</p>
+</dd>
+<dt>SI_UNITS<span class="classifier">dict</span></dt><dd><p>Keys are the SI unit for the dictionaries stored as values.</p>
+</dd>
+</dl>
+</section>
+<section id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Link to this heading">¶</a></h2>
+<p>Conversion factors taken from Perry’s Chemical Engineer’s Handbook.</p>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">¶</a></h2>
+<p>[1] Perry’s Chemical Engineers’ Handbook; Perry, R. H., Southard, M. Z., Eds.; McGraw-Hill Education: New York, 2019.</p>
+</section>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/phaseprop.units.to_si.html#phaseprop.units.to_si" title="phaseprop.units.to_si"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_si</span></code></a>(value, unit)</p></td>
+<td><p>Convert input value to corresponding SI value.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/phaseprop.units.to_si_unit.html#phaseprop.units.to_si_unit" title="phaseprop.units.to_si_unit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_si_unit</span></code></a>(unit)</p></td>
+<td><p>Lookup corresponding SI value.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Phaseprop</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structure.html">Project Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pure_component.html">Pure Components</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Units</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#attributes">Attributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#notes">Notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#references">References</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/phaseprop.units.to_si.html">phaseprop.units.to_si</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/phaseprop.units.to_si_unit.html">phaseprop.units.to_si_unit</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="pure_component.html" title="previous chapter">Pure Components</a></li>
+      <li>Next: <a href="generated/phaseprop.units.to_si.html" title="next chapter">phaseprop.units.to_si</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, John Towne.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/units.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
