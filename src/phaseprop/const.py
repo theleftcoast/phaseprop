@@ -31,16 +31,79 @@ References
 """
 
 from pathlib import Path
-
-# Physical constants
-R = 8.31446261815324
-EC = 1.602176634*10**-19
-KB = 1.380649*10**-23
-NA = 6.02214076*10**23
-C = 299792458.0
-F = 96485.33212
-PI = 3.14159265358979323846
-E0 = 8.8541878128*10**-12
+import typing
+import src.phaseprop.units as units
+import src.phaseprop.refs as refs
 
 # Project constants
 ROOT_DIR = Path(__file__).resolve().parent
+
+
+class Const(float):
+    """Constant with metadata.
+
+    Parameters
+    ----------
+    unit : str, optional
+        Unit associated with the constant.
+    uncertainty : float, optional
+        Uncertainty associated with the constant.
+    source : str, optional
+        Source for the constant (ACS citation format preferred).
+    notes : str, optional
+        Notes associated with the constant.
+    """
+
+    def __new__(
+        cls,
+        value: float,
+        unit: typing.Optional[str] = None,
+        uncertainty: typing.Optional[float] = None,
+        source: typing.Optional[str] = None,
+        notes: typing.Optional[str] = None,
+    ):
+        return float.__new__(cls, value)
+
+    def __init__(
+        self,
+        value: float,
+        unit: typing.Optional[str] = None,
+        uncertainty: typing.Optional[float] = None,
+        source: typing.Optional[str] = None,
+        notes: typing.Optional[str] = None,
+    ):
+        float.__init__(value)
+        self.unit = unit
+        self.uncertainty = uncertainty
+        self.source = source
+        self.notes = notes
+
+    @property
+    def unit(self):
+        """str : Source unit for constant."""
+        return self._unit
+
+    @unit.setter
+    def unit(self, value):
+        if value in units.UNITS:
+            self._unit = value
+            return
+        elif value in units.TEMPERATURE:
+            self._unit = value
+            return
+        elif value is None:
+            self._unit = value
+            return
+        else:
+            raise ValueError("Unit is not defined.")
+
+
+# Physical constants
+R = Const(value=8.31446261815324, source=refs.dippr)
+EC = Const(value=1.602176634 * 10**-19, source=refs.dippr)
+KB = Const(value=1.380649 * 10**-23, source=refs.dippr)
+NA = Const(value=6.02214076 * 10**23, source=refs.dippr)
+C = Const(value=299792458.0, source=refs.dippr)
+F = Const(value=96485.33212, source=refs.dippr)
+PI = Const(value=3.14159265358979323846, unit="dimensionless", source=refs.dippr)
+E0 = Const(value=8.8541878128 * 10**-12, source=refs.dippr)

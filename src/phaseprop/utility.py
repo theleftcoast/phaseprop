@@ -1,4 +1,4 @@
-"""Utility objects."""
+"""Module providing utility objects."""
 
 import dataclasses
 import typing
@@ -59,65 +59,6 @@ class Callback(list):
         """
         for d in self._delegates:
             d(*args, **kwargs)
-
-
-class Const(float):
-    """Constant with metadata.
-
-    Parameters
-    ----------
-    unit : str, optional
-        Unit associated with the constant.
-    uncertainty : float, optional
-        Uncertainty associated with the constant.
-    source : str, optional
-        Source for the constant (ACS citation format preferred).
-    notes : str, optional
-        Notes associated with the constant.
-    """
-
-    def __new__(
-        cls,
-        value: float,
-        unit: typing.Optional[str] = None,
-        uncertainty: typing.Optional[float] = None,
-        source: typing.Optional[str] = None,
-        notes: typing.Optional[str] = None,
-    ):
-        return float.__new__(cls, value)
-
-    def __init__(
-        self,
-        value: float,
-        unit: typing.Optional[str] = None,
-        uncertainty: typing.Optional[float] = None,
-        source: typing.Optional[str] = None,
-        notes: typing.Optional[str] = None,
-    ):
-        float.__init__(value)
-        self.unit = unit
-        self.uncertainty = uncertainty
-        self.source = source
-        self.notes = notes
-
-    @property
-    def unit(self):
-        """str : Source unit for constant."""
-        return self._unit
-
-    @unit.setter
-    def unit(self, value):
-        if value in units.UNITS:
-            self._unit = value
-            return
-        elif value in units.TEMPERATURE:
-            self._unit = value
-            return
-        elif value is None:
-            self._unit = value
-            return
-        else:
-            raise ValueError("Unit is not defined.")
 
 
 @dataclasses.dataclass(frozen=True, eq=True)

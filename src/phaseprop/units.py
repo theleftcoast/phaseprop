@@ -57,8 +57,10 @@ References
 [1] Perry's Chemical Engineers' Handbook; Perry, R. H., Southard, M. Z., Eds.; McGraw-Hill Education: New York, 2019.
 """
 
-# TODO:  Implement as frozen dictionaries.
-MOLECULAR_WEIGHT = {"g/mol": 1.0, "Da": 1.0}
+MOLECULAR_WEIGHT = {
+    "g/mol": 1.0,
+    "Da": 1.0,
+}
 
 AMOUNT = {
     "lbmmol": 453.5924,
@@ -68,7 +70,14 @@ AMOUNT = {
     "mol": 1.0,
 }
 
-MASS = {"lbm": 0.45359, "st": 907.18, "lt": 1016.0, "mt": 1000.0, "g": 0.001, "kg": 1.0}
+MASS = {
+    "lbm": 0.45359,
+    "st": 907.18,
+    "lt": 1016.0,
+    "mt": 1000.0,
+    "g": 0.001,
+    "kg": 1.0,
+}
 
 LENGTH = {
     "ft": 0.3048,
@@ -111,9 +120,19 @@ TEMPERATURE = {
     "K": lambda t: t,
 }
 
-FORCE = {"lbf": 4.448222, "dyne": 0.00001, "N": 1.0}
+FORCE = {
+    "lbf": 4.448222,
+    "dyne": 0.00001,
+    "N": 1.0,
+}
 
-PRESSURE = {"psi": 6894.8, "atm": 101325.0, "mmhg": 133.32, "MPa": 1000000.0, "Pa": 1.0}
+PRESSURE = {
+    "psi": 6894.8,
+    "atm": 101325.0,
+    "mmhg": 133.32,
+    "MPa": 1000000.0,
+    "Pa": 1.0,
+}
 
 DENSITY = {
     "lbm/cuft": 16.01846,
@@ -123,11 +142,21 @@ DENSITY = {
     "kg/m3": 1.0,
 }
 
-MOLAR_DENSITY = {"kmol/m3": 1000.0, "mol/dm3": 1000.0, "mol/m3": 1.0}
+MOLAR_DENSITY = {
+    "kmol/m3": 1000.0,
+    "mol/dm3": 1000.0,
+    "mol/m3": 1.0,
+}
 
-MOLAR_VOLUME = {"m3/kmol": 0.001, "m3/mol": 1.0}
+MOLAR_VOLUME = {
+    "m3/kmol": 0.001,
+    "m3/mol": 1.0,
+}
 
-ENERGY = {"Btu": 1054.4, "J": 1.0}
+ENERGY = {
+    "Btu": 1054.4,
+    "J": 1.0,
+}
 
 HEAT_OF_VAPORIZATION = {
     "J/kmol": 0.001,
@@ -136,15 +165,28 @@ HEAT_OF_VAPORIZATION = {
     "J/mol": 1.0,
 }
 
-HEAT_CAPACITY = {"J/kmol.K": 0.001, "J/mol.K": 1.0}
+HEAT_CAPACITY = {
+    "J/kmol.K": 0.001,
+    "J/mol.K": 1.0,
+}
 
-VISCOSITY = {"Pa.s": 1.0}
+VISCOSITY = {
+    "Pa.s": 1.0,
+}
 
-THERMAL_CONDUCTIVITY = {"W/m.K": 1.0}
+THERMAL_CONDUCTIVITY = {
+    "W/m.K": 1.0,
+}
 
-SURFACE_TENSION = {"mN/m": 0.001, "dyne/cm": 0.001, "N/m": 1.0}
+SURFACE_TENSION = {
+    "mN/m": 0.001,
+    "dyne/cm": 0.001,
+    "N/m": 1.0,
+}
 
-DIMENSIONLESS = {"dimensionless": 1.0}
+DIMENSIONLESS = {
+    "dimensionless": 1.0,
+}
 
 # Temperature is left out of this dictionary because conversion is more than just multiplication by a constant.
 UNITS = {
